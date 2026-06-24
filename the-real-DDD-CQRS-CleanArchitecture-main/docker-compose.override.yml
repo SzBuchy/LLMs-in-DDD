@@ -1,0 +1,18 @@
+services:
+  sqlserver:
+    ports:
+      - "1444:1433"
+    networks:
+      - my-app-network
+
+  kafka-1:
+    networks:
+      - my-app-network
+
+  kafka-2:
+    networks:
+      - my-app-network
+
+  kafka-ui:
+    networks:
+      - my-app-network
