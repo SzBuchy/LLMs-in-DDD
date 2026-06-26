@@ -4,5 +4,7 @@
     {
         public const string BasketsAggregateTypeName = "basket-service.baskets";
         public const string CouponsAggregateTypeName = "basket-service.coupons";
+        public const string VouchersAggregateTypeName = "basket-service.vouchers";
+        public const string ProductReviewsAggregateTypeName = "basket-service.product-reviews";
     }
 }
