@@ -167,6 +167,90 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure.Migrations
                     b.ToTable("ProductReviews", (string)null);
                 });
 
+            modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.LoyaltyAccountEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MaxPointsPerRedemption")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("LoyaltyAccounts", (string)null);
+                });
+
+            modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.LoyaltyPointBatchEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("AwardedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ExpiredAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("LoyaltyAccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RedeemedPoints")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoyaltyAccountId", "OrderId")
+                        .IsUnique();
+
+                    b.ToTable("LoyaltyPointBatches", (string)null);
+                });
+
+            modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.LoyaltyRedemptionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("LoyaltyAccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("RedeemedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoyaltyAccountId", "OrderId")
+                        .IsUnique();
+
+                    b.ToTable("LoyaltyRedemptions", (string)null);
+                });
+
             modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.SellerEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -229,9 +313,38 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure.Migrations
                     b.Navigation("Seller");
                 });
 
+            modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.LoyaltyPointBatchEntity", b =>
+                {
+                    b.HasOne("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.LoyaltyAccountEntity", "LoyaltyAccount")
+                        .WithMany("PointBatches")
+                        .HasForeignKey("LoyaltyAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LoyaltyAccount");
+                });
+
+            modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.LoyaltyRedemptionEntity", b =>
+                {
+                    b.HasOne("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.LoyaltyAccountEntity", "LoyaltyAccount")
+                        .WithMany("Redemptions")
+                        .HasForeignKey("LoyaltyAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LoyaltyAccount");
+                });
+
             modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.BasketEntity", b =>
                 {
                     b.Navigation("BasketItems");
+                });
+
+            modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.LoyaltyAccountEntity", b =>
+                {
+                    b.Navigation("PointBatches");
+
+                    b.Navigation("Redemptions");
                 });
 
             modelBuilder.Entity("VOEConsulting.Flame.BasketContext.Infrastructure.Entities.CouponEntity", b =>

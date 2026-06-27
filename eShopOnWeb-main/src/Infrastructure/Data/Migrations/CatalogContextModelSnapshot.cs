@@ -150,6 +150,91 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.ToTable("CatalogTypes");
                 });
 
+            modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate.LoyaltyAccount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BuyerId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId")
+                        .IsUnique();
+
+                    b.ToTable("LoyaltyAccounts");
+                });
+
+            modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate.LoyaltyPointGrant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("AwardedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("LoyaltyAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PointsAwarded")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PointsRemaining")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SourceOrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoyaltyAccountId");
+
+                    b.HasIndex("SourceOrderId")
+                        .IsUnique()
+                        .HasFilter("[SourceOrderId] IS NOT NULL");
+
+                    b.ToTable("LoyaltyPointGrants");
+                });
+
+            modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate.LoyaltyPointRedemption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("LoyaltyAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PointsRedeemed")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("RedeemedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoyaltyAccountId");
+
+                    b.ToTable("LoyaltyPointRedemptions");
+                });
+
             modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -259,6 +344,24 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.Navigation("CatalogType");
                 });
 
+            modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate.LoyaltyPointGrant", b =>
+                {
+                    b.HasOne("Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate.LoyaltyAccount", null)
+                        .WithMany("PointGrants")
+                        .HasForeignKey("LoyaltyAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate.LoyaltyPointRedemption", b =>
+                {
+                    b.HasOne("Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate.LoyaltyAccount", null)
+                        .WithMany("Redemptions")
+                        .HasForeignKey("LoyaltyAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate.Order", b =>
                 {
                     b.OwnsOne("Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate.Address", "ShipToAddress", b1 =>
@@ -341,6 +444,13 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
             modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate.Basket", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate.LoyaltyAccount", b =>
+                {
+                    b.Navigation("PointGrants");
+
+                    b.Navigation("Redemptions");
                 });
 
             modelBuilder.Entity("Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate.Order", b =>

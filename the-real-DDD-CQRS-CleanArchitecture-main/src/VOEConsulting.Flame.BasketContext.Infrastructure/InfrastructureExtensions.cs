@@ -7,6 +7,8 @@ using System.Reflection;
 using VOEConsulting.Flame.BasketContext.Application.Abstractions.Messaging;
 using VOEConsulting.Flame.BasketContext.Application.Repositories;
 using VOEConsulting.Flame.BasketContext.Infrastructure.Persistence.Repositories;
+using VOEConsulting.Flame.BasketContext.Infrastructure.Services;
+using VOEConsulting.Flame.Common.Domain.Services;
 using VOEConsulting.Infrastructure.Persistence;
 namespace VOEConsulting.Flame.BasketContext.Infrastructure
 {
@@ -36,6 +38,8 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBasketRepository, BasketRepository>();
             services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
+            services.AddScoped<ILoyaltyAccountRepository, LoyaltyAccountRepository>();
+            services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 
             // Register AutoMapper
             services.AddAutoMapper(Assembly.GetExecutingAssembly());

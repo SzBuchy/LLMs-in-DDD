@@ -19,6 +19,7 @@ public static class ConfigureCoreServices
         services.AddScoped<IBasketService, BasketService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<ILoyaltyAccountService, LoyaltyAccountService>();
         services.AddScoped<IBasketQueryService, BasketQueryService>();
 
         var catalogSettings = configuration.Get<CatalogSettings>() ?? new CatalogSettings();
