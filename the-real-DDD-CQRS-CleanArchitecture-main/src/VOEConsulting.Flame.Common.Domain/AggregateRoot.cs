@@ -14,6 +14,12 @@ namespace VOEConsulting.Flame.Common.Domain
         where TModel : IAuditableEntity
     {
         private readonly IList<IDomainEvent> _domainEvents = [];
+
+        protected AggregateRoot() { }
+
+        protected AggregateRoot(Id<TModel> id)
+            : base(id) { }
+
         public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
         public IReadOnlyCollection<IDomainEvent> PopDomainEvents()

@@ -8,6 +8,8 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
 {
     public void Configure(EntityTypeBuilder<Review> builder)
     {
+        builder.HasIndex(r => r.CatalogItemId);
+
         builder.Property(r => r.BuyerId)
             .IsRequired()
             .HasMaxLength(256);

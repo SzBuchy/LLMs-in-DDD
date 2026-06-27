@@ -9,13 +9,20 @@ namespace VOEConsulting.Flame.BasketContext.Domain.ProductReviews
         public const int MinContentLength = 10;
         public const int MaxContentLength = 500;
 
-        private ProductReview(Id<Customer> customerId, Guid productId, int rating, string content)
+        private ProductReview(
+            Id<Customer> customerId,
+            Guid productId,
+            int rating,
+            string content,
+            ProductReviewStatus status,
+            Id<ProductReview>? id = null)
+            : base(id ?? Id<ProductReview>.New())
         {
             CustomerId = customerId.EnsureNonNull();
             ProductId = productId.EnsureNotDefault();
             Rating = rating.EnsureWithinRange(MinRating, MaxRating);
             Content = content.EnsureNonBlank().EnsureLengthInRange(MinContentLength, MaxContentLength);
-            Status = ProductReviewStatus.PendingModeration;
+            Status = status;
         }
 
         public Id<Customer> CustomerId { get; }
@@ -26,7 +33,12 @@ namespace VOEConsulting.Flame.BasketContext.Domain.ProductReviews
 
         public static ProductReview Create(Id<Customer> customerId, Guid productId, int rating, string content)
         {
-            return new ProductReview(customerId, productId, rating, content);
+            return new ProductReview(customerId, productId, rating, content, ProductReviewStatus.PendingModeration);
+        }
+
+        public static ProductReview Restore(Id<ProductReview> id, Id<Customer> customerId, Guid productId, int rating, string content, ProductReviewStatus status)
+        {
+            return new ProductReview(customerId, productId, rating, content, status, id);
         }
 
         public void Publish()

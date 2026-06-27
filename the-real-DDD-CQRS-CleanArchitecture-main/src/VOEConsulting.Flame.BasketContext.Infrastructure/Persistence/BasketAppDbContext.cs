@@ -14,6 +14,7 @@ public class BasketAppDbContext : DbContext
     public DbSet<CustomerEntity> Customers { get; set; }
     public DbSet<SellerEntity> Sellers { get; set; }
     public DbSet<CouponEntity> Coupons { get; set; }
+    public DbSet<ProductReviewEntity> ProductReviews { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Apply Fluent API configurations from the current assembly

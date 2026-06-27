@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using VOEConsulting.Flame.BasketContext.Domain.Baskets;
+using VOEConsulting.Flame.BasketContext.Domain.ProductReviews;
 using VOEConsulting.Flame.BasketContext.Infrastructure.Entities;
 
 public class BasketMappingProfile : Profile
@@ -18,6 +19,9 @@ public class BasketMappingProfile : Profile
 
         CreateMap<Seller, SellerEntity>();
         CreateMap<Customer, CustomerEntity>();
+        CreateMap<ProductReview, ProductReviewEntity>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.Value))
+            .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId.Value));
 
         // Entity -> Domain mappings
         CreateMap<BasketEntity, Basket>()
@@ -54,6 +58,15 @@ public class BasketMappingProfile : Profile
 
         CreateMap<CustomerEntity, Customer>()
             .ConstructUsing(entity => Customer.Create(entity.IsEliteMember, entity.Id));
+
+        CreateMap<ProductReviewEntity, ProductReview>()
+            .ConstructUsing(entity => ProductReview.Restore(
+                entity.Id,
+                entity.CustomerId,
+                entity.ProductId,
+                entity.Rating,
+                entity.Content,
+                entity.Status));
     }
 
 }
