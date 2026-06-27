@@ -1,7 +1,7 @@
-﻿using FluentValidation;
-using MediatR;
+﻿using MediatR;
 using System.Diagnostics;
 using VOEConsulting.Flame.Common.Core.Exceptions;
+using VOEConsulting.Flame.Common.Domain.Exceptions;
 
 public sealed class ExceptionHandlingPipelineBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
@@ -22,9 +22,9 @@ public sealed class ExceptionHandlingPipelineBehavior<TRequest, TResponse>
             Activity.Current?.SetStatus(ActivityStatusCode.Error, "validation_failed");
             Activity.Current?.AddException(ex);
             Activity.Current?.SetTag("error.type", "validation");
-            Activity.Current?.SetTag("validation.error_count", ex.Errors?.Count() ?? 0);
+            Activity.Current?.SetTag("validation.error_count", ex.Errors?.Count ?? 0);
 
-            var domainError = DomainError.Validation(ex.Message, ex.Errors?.Select(x => x.ErrorMessage).ToList());
+            var domainError = DomainError.Validation(ex.Message, ex.Errors?.ToList());
             return CastOrThrow(domainError, ex);
         }
         catch (FlameApplicationException ex)
@@ -49,15 +49,21 @@ public sealed class ExceptionHandlingPipelineBehavior<TRequest, TResponse>
 
     private static TResponse CastOrThrow(IDomainError domainError, Exception ex)
     {
-        var failureResult = Result.Failure<Guid, IDomainError>(domainError);
+        var responseType = typeof(TResponse);
 
-        if (failureResult is TResponse response)
+        if (responseType.IsGenericType && responseType.GetGenericTypeDefinition() == typeof(Result<,>))
         {
-            return response;
+            var valueType = responseType.GetGenericArguments()[0];
+            var failureMethod = typeof(Result)
+                .GetMethods()
+                .First(m => m.Name == nameof(Result.Failure) && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 2)
+                .MakeGenericMethod(valueType, typeof(IDomainError));
+
+            return (TResponse)failureMethod.Invoke(null, [domainError])!;
         }
 
         throw new InvalidCastException(
-            $"Failed to cast failure result to {typeof(TResponse).Name} for request {typeof(TRequest).Name}.",
+            $"Failed to build a failure result for {typeof(TResponse).Name} for request {typeof(TRequest).Name}.",
             ex);
     }
 }

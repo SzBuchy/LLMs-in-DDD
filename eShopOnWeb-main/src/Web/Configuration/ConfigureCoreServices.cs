@@ -20,6 +20,8 @@ public static class ConfigureCoreServices
         services.AddScoped<IBasketQueryService, BasketQueryService>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<ILoyaltyAccountRepository, LoyaltyAccountRepository>();
+        services.AddScoped<ILoyaltyAccountService, LoyaltyAccountService>();
 
         var catalogSettings = configuration.Get<CatalogSettings>() ?? new CatalogSettings();
         services.AddSingleton<IUriComposer>(new UriComposer(catalogSettings));

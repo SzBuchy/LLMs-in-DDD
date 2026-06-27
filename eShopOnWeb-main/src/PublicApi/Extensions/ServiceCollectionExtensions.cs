@@ -29,6 +29,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITokenClaimsService, IdentityTokenClaimService>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<ILoyaltyAccountRepository, LoyaltyAccountRepository>();
+        services.AddScoped<ILoyaltyAccountService, LoyaltyAccountService>();
     }
 
     public static void AddJwtAuthentication(this IServiceCollection services)

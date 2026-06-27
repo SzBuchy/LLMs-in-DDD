@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
+using Microsoft.eShopWeb.ApplicationCore.Entities.LoyaltyAccountAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Entities.ReviewAggregate;
 
@@ -20,6 +21,8 @@ public class CatalogContext : DbContext
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<BasketItem> BasketItems { get; set; }
     public DbSet<Review> Reviews { get; set; }
+    public DbSet<LoyaltyAccount> LoyaltyAccounts { get; set; }
+    public DbSet<LoyaltyPointsLot> LoyaltyPointsLots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
