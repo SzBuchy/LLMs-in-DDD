@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
         services.AddScoped<ITokenClaimsService, IdentityTokenClaimService>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IReviewService, ReviewService>();
     }
 
     public static void AddJwtAuthentication(this IServiceCollection services)
