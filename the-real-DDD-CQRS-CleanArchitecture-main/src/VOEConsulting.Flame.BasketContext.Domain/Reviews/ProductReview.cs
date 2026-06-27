@@ -11,7 +11,8 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
         private const int MinContentLength = 10;
         private const int MaxContentLength = 500;
 
-        private ProductReview(Id<Customer> customerId, Guid productId, int rating, string content)
+        private ProductReview(Id<ProductReview> id, Id<Customer> customerId, Guid productId, int rating, string content)
+            : base(id)
         {
             CustomerId = customerId.EnsureNonNull();
             ProductId = productId.EnsureNotDefault();
@@ -26,9 +27,9 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
         public string Content { get; }
         public ReviewStatus Status { get; private set; }
 
-        public static ProductReview Create(Id<Customer> customerId, Guid productId, int rating, string content)
+        public static ProductReview Create(Id<Customer> customerId, Guid productId, int rating, string content, Id<ProductReview>? id = null)
         {
-            var review = new ProductReview(customerId, productId, rating, content);
+            var review = new ProductReview(id ?? Id<ProductReview>.New(), customerId, productId, rating, content);
             review.RaiseDomainEvent(new ProductReviewCreatedEvent(review.Id));
 
             return review;

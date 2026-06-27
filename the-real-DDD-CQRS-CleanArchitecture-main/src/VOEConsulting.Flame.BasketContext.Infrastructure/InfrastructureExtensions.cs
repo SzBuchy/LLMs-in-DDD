@@ -35,6 +35,7 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure
         {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBasketRepository, BasketRepository>();
+            services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
 
             // Register AutoMapper
             services.AddAutoMapper(Assembly.GetExecutingAssembly());

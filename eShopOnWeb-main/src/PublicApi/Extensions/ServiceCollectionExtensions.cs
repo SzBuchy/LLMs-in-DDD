@@ -27,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUriComposer>(new UriComposer(catalogSettings));
         services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
         services.AddScoped<ITokenClaimsService, IdentityTokenClaimService>();
+        services.AddScoped<IReviewRepository, ReviewRepository>();
     }
 
     public static void AddJwtAuthentication(this IServiceCollection services)
