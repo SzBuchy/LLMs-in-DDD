@@ -89,18 +89,85 @@ public class ReviewTests
     {
         var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
 
-        review.Publish();
+        review.Publish(Array.Empty<Review>());
 
         Assert.Equal(ReviewStatus.Published, review.Status);
+    }
+
+    [Fact]
+    public void PublishThrowsInvalidOperationExceptionWhenBuyerAlreadyHasPublishedReviewForProduct()
+    {
+        var existingReview = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+        existingReview.Publish(Array.Empty<Review>());
+        var nextReview = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            nextReview.Publish(MaximumOnePublishedReviewPerProductPolicy.Instance, new[] { existingReview }));
+    }
+
+    [Fact]
+    public void PublishChangesStatusToPublishedWhenPreviousReviewWasWithdrawn()
+    {
+        var existingReview = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+        existingReview.Publish(Array.Empty<Review>());
+        existingReview.Withdraw();
+        var nextReview = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+
+        nextReview.Publish(MaximumOnePublishedReviewPerProductPolicy.Instance, new[] { existingReview });
+
+        Assert.Equal(ReviewStatus.Published, nextReview.Status);
+    }
+
+    [Fact]
+    public void PublishChangesStatusToPublishedWhenExistingPublishedReviewBelongsToDifferentBuyer()
+    {
+        var existingReview = new Review("another-buyer-id", _validCatalogItemId, _validRating, _validContent);
+        existingReview.Publish(Array.Empty<Review>());
+        var nextReview = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+
+        nextReview.Publish(MaximumOnePublishedReviewPerProductPolicy.Instance, new[] { existingReview });
+
+        Assert.Equal(ReviewStatus.Published, nextReview.Status);
+    }
+
+    [Fact]
+    public void PublishChangesStatusToPublishedWhenExistingPublishedReviewBelongsToDifferentProduct()
+    {
+        var existingReview = new Review(_validBuyerId, _validCatalogItemId + 1, _validRating, _validContent);
+        existingReview.Publish(Array.Empty<Review>());
+        var nextReview = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+
+        nextReview.Publish(MaximumOnePublishedReviewPerProductPolicy.Instance, new[] { existingReview });
+
+        Assert.Equal(ReviewStatus.Published, nextReview.Status);
     }
 
     [Fact]
     public void PublishThrowsInvalidOperationExceptionWhenAlreadyPublished()
     {
         var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
-        review.Publish();
+        review.Publish(Array.Empty<Review>());
 
-        Assert.Throws<InvalidOperationException>(() => review.Publish());
+        Assert.Throws<InvalidOperationException>(() => review.Publish(Array.Empty<Review>()));
+    }
+
+    [Fact]
+    public void WithdrawChangesStatusToWithdrawnWhenPublished()
+    {
+        var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+        review.Publish(Array.Empty<Review>());
+
+        review.Withdraw();
+
+        Assert.Equal(ReviewStatus.Withdrawn, review.Status);
+    }
+
+    [Fact]
+    public void WithdrawThrowsInvalidOperationExceptionWhenPending()
+    {
+        var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+
+        Assert.Throws<InvalidOperationException>(() => review.Withdraw());
     }
 
     [Fact]
@@ -128,14 +195,14 @@ public class ReviewTests
         var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
         review.Reject();
 
-        Assert.Throws<InvalidOperationException>(() => review.Publish());
+        Assert.Throws<InvalidOperationException>(() => review.Publish(Array.Empty<Review>()));
     }
 
     [Fact]
     public void RejectThrowsInvalidOperationExceptionWhenPublished()
     {
         var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
-        review.Publish();
+        review.Publish(Array.Empty<Review>());
 
         Assert.Throws<InvalidOperationException>(() => review.Reject());
     }

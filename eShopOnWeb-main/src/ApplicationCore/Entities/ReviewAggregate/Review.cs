@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 
@@ -34,9 +35,17 @@ public class Review : BaseEntity, IAggregateRoot
         Status = ReviewStatus.PendingModeration;
     }
 
-    public void Publish()
+    public void Publish(IEnumerable<Review> existingReviews)
+    {
+        Publish(MaximumOnePublishedReviewPerProductPolicy.Instance, existingReviews);
+    }
+
+    public void Publish(IReviewPublicationPolicy publicationPolicy, IEnumerable<Review> existingReviews)
     {
         GuardAgainstNonPendingStatus(nameof(Publish));
+        Guard.Against.Null(publicationPolicy, nameof(publicationPolicy));
+
+        publicationPolicy.EnsureCanPublish(this, existingReviews);
 
         Status = ReviewStatus.Published;
     }
@@ -46,6 +55,17 @@ public class Review : BaseEntity, IAggregateRoot
         GuardAgainstNonPendingStatus(nameof(Reject));
 
         Status = ReviewStatus.Rejected;
+    }
+
+    public void Withdraw()
+    {
+        if (Status != ReviewStatus.Published)
+        {
+            throw new InvalidOperationException(
+                $"Cannot {nameof(Withdraw)} a review with status '{Status}'. Only '{ReviewStatus.Published}' reviews can be withdrawn.");
+        }
+
+        Status = ReviewStatus.Withdrawn;
     }
 
     private void GuardAgainstNonPendingStatus(string transitionName)

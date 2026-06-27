@@ -29,9 +29,10 @@ namespace VOEConsulting.Flame.BasketContext.Domain.ProductReviews
             return new ProductReview(customerId, productId, rating, content);
         }
 
-        public void Publish()
+        public void Publish(IProductReviewPublicationPolicy publicationPolicy, IEnumerable<ProductReview> existingReviews)
         {
             EnsurePendingModeration();
+            publicationPolicy.EnsureNonNull().EnsureCanPublish(this, existingReviews);
             Status = ProductReviewStatus.Published;
         }
 
@@ -39,6 +40,12 @@ namespace VOEConsulting.Flame.BasketContext.Domain.ProductReviews
         {
             EnsurePendingModeration();
             Status = ProductReviewStatus.Rejected;
+        }
+
+        public void Withdraw()
+        {
+            (Status == ProductReviewStatus.Published).EnsureTrue();
+            Status = ProductReviewStatus.Withdrawn;
         }
 
         private void EnsurePendingModeration()
