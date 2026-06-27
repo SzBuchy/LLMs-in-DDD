@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 
@@ -35,13 +36,18 @@ public class Review : BaseEntity, IAggregateRoot
     public string Content { get; private set; }
     public ReviewStatus Status { get; private set; }
 
-    public void Publish()
+    public void Publish(IReviewPublicationPolicy publicationPolicy, IEnumerable<Review> buyerReviewsForSameProduct)
     {
+        Guard.Against.Null(publicationPolicy, nameof(publicationPolicy));
+        Guard.Against.Null(buyerReviewsForSameProduct, nameof(buyerReviewsForSameProduct));
+
         if (Status != ReviewStatus.PendingModeration)
         {
             throw new InvalidOperationException(
                 $"Review can only be published from '{ReviewStatus.PendingModeration}' status, but current status is '{Status}'.");
         }
+
+        publicationPolicy.EnsureCanPublish(this, buyerReviewsForSameProduct);
 
         Status = ReviewStatus.Published;
     }
@@ -55,6 +61,17 @@ public class Review : BaseEntity, IAggregateRoot
         }
 
         Status = ReviewStatus.Rejected;
+    }
+
+    public void Withdraw()
+    {
+        if (Status != ReviewStatus.Published)
+        {
+            throw new InvalidOperationException(
+                $"Review can only be withdrawn from '{ReviewStatus.Published}' status, but current status is '{Status}'.");
+        }
+
+        Status = ReviewStatus.Withdrawn;
     }
 
     private static void GuardAgainstInvalidContent(string content)

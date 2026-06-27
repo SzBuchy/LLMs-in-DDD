@@ -1,5 +1,6 @@
 ﻿using VOEConsulting.Flame.BasketContext.Domain.Baskets;
 using VOEConsulting.Flame.BasketContext.Domain.Reviews.Events;
+using VOEConsulting.Flame.BasketContext.Domain.Reviews.Policies;
 using VOEConsulting.Flame.Common.Domain.Exceptions;
 
 namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
@@ -34,9 +35,11 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
             return review;
         }
 
-        public void Publish()
+        public void Publish(IProductReviewPublicationPolicy publicationPolicy, IEnumerable<ProductReview> customerReviewsForSameProduct)
         {
             EnsureStatus(ReviewStatus.PendingModeration);
+            publicationPolicy.EnsureCanPublish(this, customerReviewsForSameProduct);
+
             Status = ReviewStatus.Published;
 
             RaiseDomainEvent(new ProductReviewPublishedEvent(this.Id));
@@ -48,6 +51,14 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
             Status = ReviewStatus.Rejected;
 
             RaiseDomainEvent(new ProductReviewRejectedEvent(this.Id));
+        }
+
+        public void Withdraw()
+        {
+            EnsureStatus(ReviewStatus.Published);
+            Status = ReviewStatus.Withdrawn;
+
+            RaiseDomainEvent(new ProductReviewWithdrawnEvent(this.Id));
         }
 
         private void EnsureStatus(ReviewStatus expected)
