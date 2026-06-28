@@ -12,4 +12,12 @@ public interface IReviewService
         int rating,
         string content,
         CancellationToken cancellationToken = default);
+
+    Task<Review> EditReviewAsync(
+        string buyerId,
+        int catalogItemId,
+        int reviewId,
+        int rating,
+        string content,
+        CancellationToken cancellationToken = default);
 }

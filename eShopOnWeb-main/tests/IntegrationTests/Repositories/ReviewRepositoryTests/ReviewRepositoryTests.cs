@@ -54,4 +54,22 @@ public class ReviewRepositoryTests
         Assert.Equal(2, reviews.Count);
         Assert.All(reviews, review => Assert.Equal(CatalogItemId, review.CatalogItemId));
     }
+
+    [Fact]
+    public async Task UpdatesReview()
+    {
+        var review = new Review("buyer-1", CatalogItemId, 5, "Produkt spełnił wszystkie moje oczekiwania.");
+        review.Publish();
+        var savedReview = await _reviewRepository.AddAsync(review, TestContext.Current.CancellationToken);
+
+        savedReview.Edit(3, "Produkt po edycji wymaga ponownej moderacji.");
+        await _reviewRepository.UpdateAsync(savedReview, TestContext.Current.CancellationToken);
+
+        var reviewFromRepo = await _reviewRepository.GetByIdAsync(savedReview.Id, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(reviewFromRepo);
+        Assert.Equal(3, reviewFromRepo.Rating);
+        Assert.Equal("Produkt po edycji wymaga ponownej moderacji.", reviewFromRepo.Content);
+        Assert.Equal(ReviewStatus.PendingModeration, reviewFromRepo.Status);
+    }
 }

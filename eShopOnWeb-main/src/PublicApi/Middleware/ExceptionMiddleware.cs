@@ -32,9 +32,18 @@ public class ExceptionMiddleware
     {
         context.Response.ContentType = "application/json";
 
-        if (exception is CatalogItemNotFoundException)
+        if (exception is CatalogItemNotFoundException || exception is ReviewNotFoundException)
         {
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            await context.Response.WriteAsync(new ErrorDetails()
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = exception.Message
+            }.ToString());
+        }
+        else if (exception is ReviewAccessDeniedException)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
             await context.Response.WriteAsync(new ErrorDetails()
             {
                 StatusCode = context.Response.StatusCode,
@@ -50,7 +59,7 @@ public class ExceptionMiddleware
                 Message = exception.Message
             }.ToString());
         }
-        else if (exception is LoyaltyAccountOperationException || exception is ArgumentException)
+        else if (exception is LoyaltyAccountOperationException || exception is ArgumentException || exception is ReviewNotEditableException)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             await context.Response.WriteAsync(new ErrorDetails()

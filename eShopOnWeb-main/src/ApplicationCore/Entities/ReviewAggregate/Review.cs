@@ -1,5 +1,6 @@
 using System;
 using Ardalis.GuardClauses;
+using Microsoft.eShopWeb.ApplicationCore.Exceptions;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 
 namespace Microsoft.eShopWeb.ApplicationCore.Entities.ReviewAggregate;
@@ -46,6 +47,21 @@ public class Review : BaseEntity, IAggregateRoot
         GuardAgainstNonPendingStatus(nameof(Reject));
 
         Status = ReviewStatus.Rejected;
+    }
+
+    public void Edit(int rating, string content)
+    {
+        if (Status != ReviewStatus.Published)
+        {
+            throw new ReviewNotEditableException(Status);
+        }
+
+        Guard.Against.OutOfRange(rating, nameof(rating), MinRating, MaxRating);
+        GuardAgainstInvalidContent(content);
+
+        Rating = rating;
+        Content = content;
+        Status = ReviewStatus.PendingModeration;
     }
 
     private void GuardAgainstNonPendingStatus(string transitionName)

@@ -1,5 +1,6 @@
 using System;
 using Microsoft.eShopWeb.ApplicationCore.Entities.ReviewAggregate;
+using Microsoft.eShopWeb.ApplicationCore.Exceptions;
 using Xunit;
 
 namespace Microsoft.eShopWeb.UnitTests.ApplicationCore.Entities;
@@ -138,5 +139,46 @@ public class ReviewTests
         review.Publish();
 
         Assert.Throws<InvalidOperationException>(() => review.Reject());
+    }
+
+    [Fact]
+    public void EditUpdatesPublishedReviewAndSendsItBackToModeration()
+    {
+        var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+        review.Publish();
+        const int newRating = 3;
+        const string newContent = "Produkt po czasie nadal jest całkiem dobry.";
+
+        review.Edit(newRating, newContent);
+
+        Assert.Equal(newRating, review.Rating);
+        Assert.Equal(newContent, review.Content);
+        Assert.Equal(ReviewStatus.PendingModeration, review.Status);
+    }
+
+    [Theory]
+    [InlineData(ReviewStatus.PendingModeration)]
+    [InlineData(ReviewStatus.Rejected)]
+    public void EditThrowsReviewNotEditableExceptionWhenReviewIsNotPublished(ReviewStatus reviewStatus)
+    {
+        var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+        if (reviewStatus == ReviewStatus.Rejected)
+        {
+            review.Reject();
+        }
+
+        Assert.Throws<ReviewNotEditableException>(() => review.Edit(3, "Produkt wymaga ponownej oceny klienta."));
+    }
+
+    [Theory]
+    [InlineData(0, "Produkt wymaga ponownej oceny klienta.")]
+    [InlineData(6, "Produkt wymaga ponownej oceny klienta.")]
+    [InlineData(3, "Krótka")]
+    public void EditThrowsArgumentExceptionGivenInvalidDetails(int rating, string content)
+    {
+        var review = new Review(_validBuyerId, _validCatalogItemId, _validRating, _validContent);
+        review.Publish();
+
+        Assert.ThrowsAny<ArgumentException>(() => review.Edit(rating, content));
     }
 }

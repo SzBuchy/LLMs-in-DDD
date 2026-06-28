@@ -123,5 +123,93 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit
             // Assert
             action.Should().ThrowExactly<ValidationException>();
         }
+
+        [Fact]
+        public void Edit_WhenReviewIsPublishedAndCustomerOwnsReview_ShouldUpdateReviewAndRequireModeration()
+        {
+            // Arrange
+            var review = ProductReview.Create(CustomerId, ProductId, 5, "Very good product.");
+            review.Publish();
+
+            // Act
+            review.Edit(CustomerId, 4, "Good product after longer usage.");
+
+            // Assert
+            review.Rating.Should().Be(4);
+            review.Content.Should().Be("Good product after longer usage.");
+            review.Status.Should().Be(ProductReviewStatus.PendingModeration);
+        }
+
+        [Fact]
+        public void Edit_WhenReviewIsPendingModeration_ShouldFail()
+        {
+            // Arrange
+            var review = ProductReview.Create(CustomerId, ProductId, 5, "Very good product.");
+
+            // Act
+            var action = () => review.Edit(CustomerId, 4, "Good product after longer usage.");
+
+            // Assert
+            action.Should().ThrowExactly<ValidationException>();
+        }
+
+        [Fact]
+        public void Edit_WhenReviewIsRejected_ShouldFail()
+        {
+            // Arrange
+            var review = ProductReview.Create(CustomerId, ProductId, 5, "Very good product.");
+            review.Reject();
+
+            // Act
+            var action = () => review.Edit(CustomerId, 4, "Good product after longer usage.");
+
+            // Assert
+            action.Should().ThrowExactly<ValidationException>();
+        }
+
+        [Fact]
+        public void Edit_WhenCustomerDoesNotOwnReview_ShouldFail()
+        {
+            // Arrange
+            var review = ProductReview.Create(CustomerId, ProductId, 5, "Very good product.");
+            review.Publish();
+
+            // Act
+            var action = () => review.Edit(Id<Customer>.New(), 4, "Good product after longer usage.");
+
+            // Assert
+            action.Should().ThrowExactly<ValidationException>();
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(6)]
+        public void Edit_WhenRatingIsOutsideRange_ShouldFail(int rating)
+        {
+            // Arrange
+            var review = ProductReview.Create(CustomerId, ProductId, 5, "Very good product.");
+            review.Publish();
+
+            // Act
+            var action = () => review.Edit(CustomerId, rating, "Good product after longer usage.");
+
+            // Assert
+            action.Should().ThrowExactly<ValidationException>();
+        }
+
+        [Fact]
+        public void Edit_WhenContentIsTooLong_ShouldFail()
+        {
+            // Arrange
+            var review = ProductReview.Create(CustomerId, ProductId, 5, "Very good product.");
+            review.Publish();
+            var content = new string('a', ProductReview.MaxContentLength + 1);
+
+            // Act
+            var action = () => review.Edit(CustomerId, 4, content);
+
+            // Assert
+            action.Should().ThrowExactly<ValidationException>();
+        }
     }
 }

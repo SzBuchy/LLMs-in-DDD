@@ -37,4 +37,29 @@ public class ReviewService : IReviewService
 
         return await _reviewRepository.AddAsync(review, cancellationToken);
     }
+
+    public async Task<Review> EditReviewAsync(
+        string buyerId,
+        int catalogItemId,
+        int reviewId,
+        int rating,
+        string content,
+        CancellationToken cancellationToken = default)
+    {
+        var review = await _reviewRepository.GetByIdAsync(reviewId, cancellationToken);
+        if (review is null || review.CatalogItemId != catalogItemId)
+        {
+            throw new ReviewNotFoundException(reviewId);
+        }
+
+        if (review.BuyerId != buyerId)
+        {
+            throw new ReviewAccessDeniedException(reviewId);
+        }
+
+        review.Edit(rating, content);
+        await _reviewRepository.UpdateAsync(review, cancellationToken);
+
+        return review;
+    }
 }

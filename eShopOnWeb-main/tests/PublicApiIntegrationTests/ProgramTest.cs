@@ -17,6 +17,8 @@ public class ProgramTest
         }
     }
 
+    public static System.IServiceProvider Services => _application.Services;
+
     [AssemblyInitialize]
     public static void AssemblyInitialize(TestContext _)
     {

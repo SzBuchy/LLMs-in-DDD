@@ -25,6 +25,12 @@ public class ReviewRepository : IReviewRepository
         return review;
     }
 
+    public async Task UpdateAsync(Review review, CancellationToken cancellationToken = default)
+    {
+        _dbContext.Reviews.Update(review);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public Task<Review?> GetByIdAsync(int reviewId, CancellationToken cancellationToken = default)
     {
         return _dbContext.Reviews

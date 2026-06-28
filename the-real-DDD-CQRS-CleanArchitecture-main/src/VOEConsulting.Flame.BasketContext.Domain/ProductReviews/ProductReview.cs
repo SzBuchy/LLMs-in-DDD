@@ -20,15 +20,14 @@ namespace VOEConsulting.Flame.BasketContext.Domain.ProductReviews
         {
             CustomerId = customerId.EnsureNonNull();
             ProductId = productId.EnsureNotDefault();
-            Rating = rating.EnsureWithinRange(MinRating, MaxRating);
-            Content = content.EnsureNonBlank().EnsureLengthInRange(MinContentLength, MaxContentLength);
+            SetReviewDetails(rating, content);
             Status = status;
         }
 
         public Id<Customer> CustomerId { get; }
         public Guid ProductId { get; }
-        public int Rating { get; }
-        public string Content { get; }
+        public int Rating { get; private set; }
+        public string Content { get; private set; } = string.Empty;
         public ProductReviewStatus Status { get; private set; }
 
         public static ProductReview Create(Id<Customer> customerId, Guid productId, int rating, string content)
@@ -51,6 +50,26 @@ namespace VOEConsulting.Flame.BasketContext.Domain.ProductReviews
         {
             EnsurePendingModeration();
             Status = ProductReviewStatus.Rejected;
+        }
+
+        public void Edit(Id<Customer> customerId, int rating, string content)
+        {
+            EnsurePublished();
+            (CustomerId == customerId.EnsureNonNull()).EnsureTrue();
+
+            SetReviewDetails(rating, content);
+            Status = ProductReviewStatus.PendingModeration;
+        }
+
+        private void SetReviewDetails(int rating, string content)
+        {
+            Rating = rating.EnsureWithinRange(MinRating, MaxRating);
+            Content = content.EnsureNonBlank().EnsureLengthInRange(MinContentLength, MaxContentLength);
+        }
+
+        private void EnsurePublished()
+        {
+            (Status == ProductReviewStatus.Published).EnsureTrue();
         }
 
         private void EnsurePendingModeration()
