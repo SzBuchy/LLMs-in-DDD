@@ -46,6 +46,24 @@ public class Review : BaseEntity, IAggregateRoot
         Status = ReviewStatus.Published;
     }
 
+    // Editing an already published review sends it back for moderation, reusing the
+    // same validation rules that apply when a review is first submitted.
+    public void Edit(int rating, string content)
+    {
+        if (Status != ReviewStatus.Published)
+        {
+            throw new InvalidOperationException(
+                $"Review can only be edited from '{ReviewStatus.Published}' status, but current status is '{Status}'.");
+        }
+
+        Guard.Against.OutOfRange(rating, nameof(rating), MinRating, MaxRating);
+        GuardAgainstInvalidContent(content);
+
+        Rating = rating;
+        Content = content;
+        Status = ReviewStatus.PendingModeration;
+    }
+
     public void Reject()
     {
         if (Status != ReviewStatus.PendingModeration)

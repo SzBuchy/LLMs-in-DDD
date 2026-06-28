@@ -29,4 +29,22 @@ public class ReviewService : IReviewService
 
         return await _reviewRepository.AddAsync(review);
     }
+
+    public async Task<Review> EditReviewAsync(string buyerId, int reviewId, int rating, string content)
+    {
+        var review = await _reviewRepository.GetByIdAsync(reviewId);
+
+        // A review that does not belong to this buyer is treated the same as a missing
+        // one, so callers cannot probe for the existence of other customers' reviews.
+        if (review is null || review.BuyerId != buyerId)
+        {
+            throw new ReviewNotFoundException(reviewId);
+        }
+
+        review.Edit(rating, content);
+
+        await _reviewRepository.UpdateAsync(review);
+
+        return review;
+    }
 }

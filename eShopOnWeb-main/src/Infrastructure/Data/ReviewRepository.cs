@@ -17,6 +17,8 @@ public class ReviewRepository : IReviewRepository
 
     public Task<Review> AddAsync(Review review) => _repository.AddAsync(review);
 
+    public Task UpdateAsync(Review review) => _repository.UpdateAsync(review);
+
     public Task<Review?> GetByIdAsync(int reviewId) => _repository.GetByIdAsync(reviewId);
 
     public Task<List<Review>> GetByCatalogItemIdAsync(int catalogItemId) =>

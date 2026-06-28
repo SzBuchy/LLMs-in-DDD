@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using VOEConsulting.Flame.BasketContext.Application.Reviews.Commands.CreateProductReview;
+using VOEConsulting.Flame.BasketContext.Application.Reviews.Commands.EditProductReview;
 
 namespace VOEConsulting.Flame.BasketContext.Api.Controllers
 {
@@ -19,6 +20,17 @@ namespace VOEConsulting.Flame.BasketContext.Api.Controllers
                 return Created($"api/productreviews/{result.Value}", result.Value);
 
             return HandleError(result.Error);
+        }
+
+        // PUT api/productreviews/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditProductReview(Guid id, [FromBody] EditProductReviewCommand command)
+        {
+            if (id != command.ReviewId)
+                return BadRequest("Review ID in URL does not match the command.");
+
+            var result = await _sender.Send(command);
+            return result.IsSuccess ? Ok(result.Value) : HandleError(result.Error);
         }
     }
 }

@@ -23,8 +23,8 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
 
         public Id<Customer> CustomerId { get; }
         public Guid ProductId { get; }
-        public int Rating { get; }
-        public string Content { get; }
+        public int Rating { get; private set; }
+        public string Content { get; private set; }
         public ReviewStatus Status { get; private set; }
 
         public static ProductReview Create(Id<Customer> customerId, Guid productId, int rating, string content, Id<ProductReview>? id = null)
@@ -49,6 +49,17 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
             Status = ReviewStatus.Rejected;
 
             RaiseDomainEvent(new ProductReviewRejectedEvent(this.Id));
+        }
+
+        public void Edit(int rating, string content)
+        {
+            EnsureStatus(ReviewStatus.Published);
+
+            Rating = rating.EnsureWithinRange(MinRating, MaxRating);
+            Content = content.EnsureLengthInRange(MinContentLength, MaxContentLength);
+            Status = ReviewStatus.PendingModeration;
+
+            RaiseDomainEvent(new ProductReviewEditedEvent(this.Id));
         }
 
         private void EnsureStatus(ReviewStatus expected)

@@ -7,6 +7,7 @@ namespace Microsoft.eShopWeb.ApplicationCore.Interfaces;
 public interface IReviewRepository
 {
     Task<Review> AddAsync(Review review);
+    Task UpdateAsync(Review review);
     Task<Review?> GetByIdAsync(int reviewId);
     Task<List<Review>> GetByCatalogItemIdAsync(int catalogItemId);
 }
