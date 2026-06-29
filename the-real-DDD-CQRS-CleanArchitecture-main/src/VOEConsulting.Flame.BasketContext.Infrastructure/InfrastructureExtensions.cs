@@ -9,6 +9,7 @@ using VOEConsulting.Flame.BasketContext.Application.Repositories;
 using VOEConsulting.Flame.BasketContext.Infrastructure.Persistence.Repositories;
 using VOEConsulting.Infrastructure.Persistence;
 using VOEConsulting.Flame.BasketContext.Domain.Reviews.Services;
+using VOEConsulting.Flame.BasketContext.Domain.Loyalty.Services;
 namespace VOEConsulting.Flame.BasketContext.Infrastructure
 {
     public static class InfrastructureExtensions
@@ -37,6 +38,7 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBasketRepository, BasketRepository>();
             services.AddScoped<IReviewRepository, ReviewRepository>();
+            services.AddScoped<ILoyaltyAccountRepository, LoyaltyAccountRepository>();
 
             // Register AutoMapper
             services.AddAutoMapper(Assembly.GetExecutingAssembly());

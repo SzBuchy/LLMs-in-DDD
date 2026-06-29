@@ -15,10 +15,12 @@ public static class ConfigureCoreServices
         services.AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
+        services.AddScoped<ILoyaltyAccountRepository, LoyaltyAccountRepository>();
 
         services.AddScoped<IBasketService, BasketService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IProductReviewService, ProductReviewService>();
+        services.AddScoped<ILoyaltyAccountService, LoyaltyAccountService>();
         services.AddScoped<IBasketQueryService, BasketQueryService>();
 
         var catalogSettings = configuration.Get<CatalogSettings>() ?? new CatalogSettings();

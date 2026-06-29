@@ -23,6 +23,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
         services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
         services.AddScoped<IProductReviewService, ProductReviewService>();
+        services.AddScoped<ILoyaltyAccountRepository, LoyaltyAccountRepository>();
+        services.AddScoped<ILoyaltyAccountService, LoyaltyAccountService>();
         services.Configure<CatalogSettings>(configuration);
 
         var catalogSettings = configuration.Get<CatalogSettings>() ?? new CatalogSettings();

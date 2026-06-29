@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VOEConsulting.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using VOEConsulting.Infrastructure.Persistence;
 namespace VOEConsulting.Flame.BasketContext.Infrastructure.Migrations
 {
     [DbContext(typeof(BasketAppDbContext))]
-    partial class BasketAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260629200005_AddLoyaltyTables")]
+    partial class AddLoyaltyTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
