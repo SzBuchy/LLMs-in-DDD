@@ -4,5 +4,6 @@ public enum ReviewStatus
 {
     PendingModeration = 1,
     Published = 2,
-    Rejected = 3
+    Rejected = 3,
+    Withdrawn = 4
 }

@@ -4,6 +4,7 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
     {
         PendingModeration = 1,
         Published = 2,
-        Rejected = 3
+        Rejected = 3,
+        Withdrawn = 4
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.eShopWeb.ApplicationCore.Entities.ReviewAggregate;
 using Xunit;
 
@@ -100,5 +101,101 @@ public class ProductReviewTests
         review.SendToModeration(); // Transition back to Pending
 
         Assert.Equal(ReviewStatus.PendingModeration, review.Status);
+    }
+
+    [Fact]
+    public void WithdrawTransitionsStatusToWithdrawn()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        
+        review.Withdraw();
+
+        Assert.Equal(ReviewStatus.Withdrawn, review.Status);
+    }
+
+    [Fact]
+    public void PublishSucceedsWhenNoExistingReviews()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        var policy = new ProductReviewPublicationPolicy();
+        var existingReviews = new List<ProductReview>();
+
+        review.Publish(policy, existingReviews);
+
+        Assert.Equal(ReviewStatus.Published, review.Status);
+    }
+
+    [Fact]
+    public void PublishSucceedsWhenExistingReviewsAreNotPublished()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        var otherReview1 = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent); // status is Pending
+        var otherReview2 = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        otherReview2.Reject(); // status is Rejected
+
+        var policy = new ProductReviewPublicationPolicy();
+        var existingReviews = new List<ProductReview> { otherReview1, otherReview2 };
+
+        review.Publish(policy, existingReviews);
+
+        Assert.Equal(ReviewStatus.Published, review.Status);
+    }
+
+    [Fact]
+    public void PublishThrowsWhenAnotherReviewForSameProductAndCustomerIsPublished()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        var publishedReview = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        publishedReview.Approve(); // status is Published
+
+        var policy = new ProductReviewPublicationPolicy();
+        var existingReviews = new List<ProductReview> { publishedReview };
+
+        Assert.Throws<InvalidOperationException>(() => review.Publish(policy, existingReviews));
+    }
+
+    [Fact]
+    public void PublishSucceedsWhenPreviousReviewForSameProductAndCustomerIsWithdrawn()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        var withdrawnReview = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        withdrawnReview.Withdraw(); // status is Withdrawn
+
+        var policy = new ProductReviewPublicationPolicy();
+        var existingReviews = new List<ProductReview> { withdrawnReview };
+
+        review.Publish(policy, existingReviews);
+
+        Assert.Equal(ReviewStatus.Published, review.Status);
+    }
+
+    [Fact]
+    public void PublishSucceedsWhenOtherPublishedReviewIsForDifferentProduct()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        var otherProductReview = new ProductReview(_validCustomerId, _validCatalogItemId + 1, _validRating, _validTextContent);
+        otherProductReview.Approve(); // status is Published
+
+        var policy = new ProductReviewPublicationPolicy();
+        var existingReviews = new List<ProductReview> { otherProductReview };
+
+        review.Publish(policy, existingReviews);
+
+        Assert.Equal(ReviewStatus.Published, review.Status);
+    }
+
+    [Fact]
+    public void PublishSucceedsWhenOtherPublishedReviewIsByDifferentCustomer()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        var otherCustomerReview = new ProductReview("other-customer", _validCatalogItemId, _validRating, _validTextContent);
+        otherCustomerReview.Approve(); // status is Published
+
+        var policy = new ProductReviewPublicationPolicy();
+        var existingReviews = new List<ProductReview> { otherCustomerReview };
+
+        review.Publish(policy, existingReviews);
+
+        Assert.Equal(ReviewStatus.Published, review.Status);
     }
 }

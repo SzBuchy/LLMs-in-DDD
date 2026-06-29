@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 
@@ -62,5 +63,24 @@ public class ProductReview : BaseEntity, IAggregateRoot
         }
 
         Status = ReviewStatus.PendingModeration;
+    }
+
+    public void Publish(IProductReviewPublicationPolicy policy, IEnumerable<ProductReview> existingReviews)
+    {
+        Guard.Against.Null(policy, nameof(policy));
+        Guard.Against.Null(existingReviews, nameof(existingReviews));
+
+        policy.Validate(this, existingReviews);
+        Status = ReviewStatus.Published;
+    }
+
+    public void Withdraw()
+    {
+        if (Status == ReviewStatus.Withdrawn)
+        {
+            return;
+        }
+
+        Status = ReviewStatus.Withdrawn;
     }
 }

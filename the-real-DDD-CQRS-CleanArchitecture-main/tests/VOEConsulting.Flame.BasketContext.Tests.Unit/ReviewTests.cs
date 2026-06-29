@@ -1,8 +1,12 @@
 using VOEConsulting.Flame.BasketContext.Domain.Reviews;
 using VOEConsulting.Flame.BasketContext.Domain.Reviews.Events;
+using VOEConsulting.Flame.BasketContext.Domain.Reviews.Services;
 using VOEConsulting.Flame.BasketContext.Tests.Unit.Extensions;
 using VOEConsulting.Flame.Common.Domain;
 using VOEConsulting.Flame.Common.Domain.Exceptions;
+using NSubstitute;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace VOEConsulting.Flame.BasketContext.Tests.Unit
 {
@@ -100,16 +104,19 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit
         }
 
         [Fact]
-        public void Publish_WhenStatusIsPendingModeration_ShouldSetStatusToPublishedAndRaiseReviewPublishedEvent()
+        public async Task PublishAsync_WhenStatusIsPendingModeration_ShouldSetStatusToPublishedAndRaiseReviewPublishedEvent()
         {
             // Arrange
             var review = Review.Create(_customerId, _productId, 5, ValidContent);
             review.ClearEvents();
 
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+
             var expectedEvent = new ReviewPublishedEvent(review.Id);
 
             // Act
-            review.Publish();
+            await review.PublishAsync(policy);
 
             // Assert
             review.Status.Should().Be(ReviewStatus.Published);
@@ -118,17 +125,20 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit
         }
 
         [Fact]
-        public void Publish_WhenStatusIsRejected_ShouldSetStatusToPublishedAndRaiseReviewPublishedEvent()
+        public async Task PublishAsync_WhenStatusIsRejected_ShouldSetStatusToPublishedAndRaiseReviewPublishedEvent()
         {
             // Arrange
             var review = Review.Create(_customerId, _productId, 5, ValidContent);
             review.Reject();
             review.ClearEvents();
 
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+
             var expectedEvent = new ReviewPublishedEvent(review.Id);
 
             // Act
-            review.Publish();
+            await review.PublishAsync(policy);
 
             // Assert
             review.Status.Should().Be(ReviewStatus.Published);
@@ -137,15 +147,17 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit
         }
 
         [Fact]
-        public void Publish_WhenStatusIsAlreadyPublished_ShouldBeNoOp()
+        public async Task PublishAsync_WhenStatusIsAlreadyPublished_ShouldBeNoOp()
         {
             // Arrange
             var review = Review.Create(_customerId, _productId, 5, ValidContent);
-            review.Publish();
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+            await review.PublishAsync(policy);
             review.ClearEvents();
 
             // Act
-            review.Publish();
+            await review.PublishAsync(policy);
 
             // Assert
             review.Status.Should().Be(ReviewStatus.Published);
@@ -171,11 +183,13 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit
         }
 
         [Fact]
-        public void Reject_WhenStatusIsPublished_ShouldSetStatusToRejectedAndRaiseReviewRejectedEvent()
+        public async Task Reject_WhenStatusIsPublished_ShouldSetStatusToRejectedAndRaiseReviewRejectedEvent()
         {
             // Arrange
             var review = Review.Create(_customerId, _productId, 5, ValidContent);
-            review.Publish();
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+            await review.PublishAsync(policy);
             review.ClearEvents();
 
             var expectedEvent = new ReviewRejectedEvent(review.Id);
@@ -203,6 +217,122 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit
             // Assert
             review.Status.Should().Be(ReviewStatus.Rejected);
             review.DomainEvents.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task PublishAsync_WhenPolicyDenies_ShouldThrowValidationException()
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 5, ValidContent);
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(false));
+
+            // Act
+            var action = () => review.PublishAsync(policy);
+
+            // Assert
+            await action.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task Withdraw_WhenStatusIsPublished_ShouldSetStatusToWithdrawnAndRaiseReviewWithdrawnEvent()
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 5, ValidContent);
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+            await review.PublishAsync(policy);
+            review.ClearEvents();
+
+            var expectedEvent = new ReviewWithdrawnEvent(review.Id);
+
+            // Act
+            review.Withdraw();
+
+            // Assert
+            review.Status.Should().Be(ReviewStatus.Withdrawn);
+            var actualEvent = review.DomainEvents.Single();
+            actualEvent.Should().BeEquivalentEventTo(expectedEvent);
+        }
+
+        [Fact]
+        public void Withdraw_WhenStatusIsPendingModeration_ShouldSetStatusToWithdrawnAndRaiseReviewWithdrawnEvent()
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 5, ValidContent);
+            review.ClearEvents();
+
+            var expectedEvent = new ReviewWithdrawnEvent(review.Id);
+
+            // Act
+            review.Withdraw();
+
+            // Assert
+            review.Status.Should().Be(ReviewStatus.Withdrawn);
+            var actualEvent = review.DomainEvents.Single();
+            actualEvent.Should().BeEquivalentEventTo(expectedEvent);
+        }
+
+        [Fact]
+        public void Withdraw_WhenStatusIsAlreadyWithdrawn_ShouldBeNoOp()
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 5, ValidContent);
+            review.Withdraw();
+            review.ClearEvents();
+
+            // Act
+            review.Withdraw();
+
+            // Assert
+            review.Status.Should().Be(ReviewStatus.Withdrawn);
+            review.DomainEvents.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void Withdraw_WhenStatusIsRejected_ShouldThrowValidationException()
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 5, ValidContent);
+            review.Reject();
+
+            // Act
+            var action = () => review.Withdraw();
+
+            // Assert
+            action.Should().Throw<ValidationException>();
+        }
+
+        [Fact]
+        public async Task ProductReviewPublicationPolicy_WhenNoPublishedReviewExists_ShouldReturnTrue()
+        {
+            // Arrange
+            var repository = Substitute.For<IReviewRepository>();
+            repository.HasPublishedReviewForProductAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(false));
+
+            var policy = new ProductReviewPublicationPolicy(repository);
+
+            // Act
+            var result = await policy.CanPublishAsync(_customerId, _productId);
+
+            // Assert
+            result.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ProductReviewPublicationPolicy_WhenPublishedReviewExists_ShouldReturnFalse()
+        {
+            // Arrange
+            var repository = Substitute.For<IReviewRepository>();
+            repository.HasPublishedReviewForProductAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+
+            var policy = new ProductReviewPublicationPolicy(repository);
+
+            // Act
+            var result = await policy.CanPublishAsync(_customerId, _productId);
+
+            // Assert
+            result.Should().BeFalse();
         }
     }
 }
