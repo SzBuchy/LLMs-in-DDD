@@ -1,4 +1,4 @@
-﻿using Infrastructure.Messaging;
+using Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +8,7 @@ using VOEConsulting.Flame.BasketContext.Application.Abstractions.Messaging;
 using VOEConsulting.Flame.BasketContext.Application.Repositories;
 using VOEConsulting.Flame.BasketContext.Infrastructure.Persistence.Repositories;
 using VOEConsulting.Infrastructure.Persistence;
+using VOEConsulting.Flame.BasketContext.Domain.Reviews.Services;
 namespace VOEConsulting.Flame.BasketContext.Infrastructure
 {
     public static class InfrastructureExtensions
@@ -35,6 +36,7 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure
         {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBasketRepository, BasketRepository>();
+            services.AddScoped<IReviewRepository, ReviewRepository>();
 
             // Register AutoMapper
             services.AddAutoMapper(Assembly.GetExecutingAssembly());

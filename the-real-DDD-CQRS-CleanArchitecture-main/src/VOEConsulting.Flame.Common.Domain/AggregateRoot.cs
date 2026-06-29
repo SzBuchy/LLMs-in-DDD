@@ -1,4 +1,4 @@
-﻿using VOEConsulting.Flame.Common.Domain.Events;
+using VOEConsulting.Flame.Common.Domain.Events;
 using VOEConsulting.Flame.Common.Domain.Extensions;
 
 namespace VOEConsulting.Flame.Common.Domain
@@ -13,6 +13,9 @@ namespace VOEConsulting.Flame.Common.Domain
     public abstract class AggregateRoot<TModel> : Entity<TModel>, IAggregateRoot
         where TModel : IAuditableEntity
     {
+        protected AggregateRoot(Id<TModel> id) : base(id) { }
+        protected AggregateRoot() : base() { }
+
         private readonly IList<IDomainEvent> _domainEvents = [];
         public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 

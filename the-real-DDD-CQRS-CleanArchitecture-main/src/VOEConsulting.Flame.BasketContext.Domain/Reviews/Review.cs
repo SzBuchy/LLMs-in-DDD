@@ -26,11 +26,26 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
             Status = ReviewStatus.PendingModeration;
         }
 
+        private Review(Id<Review> id, Id<Customer> customerId, Id<Product> productId, int rating, string content, ReviewStatus status)
+            : base(id)
+        {
+            CustomerId = customerId.EnsureNonNull();
+            ProductId = productId.EnsureNonNull();
+            Rating = rating.EnsureWithinRange(1, 5);
+            Content = content.EnsureNonNull().EnsureLengthInRange(10, 500);
+            Status = status;
+        }
+
         public static Review Create(Id<Customer> customerId, Id<Product> productId, int rating, string content)
         {
             var review = new Review(customerId, productId, rating, content);
             review.RaiseDomainEvent(new ReviewCreatedEvent(review.Id));
             return review;
+        }
+
+        public static Review Reconstitute(Id<Review> id, Id<Customer> customerId, Id<Product> productId, int rating, string content, ReviewStatus status)
+        {
+            return new Review(id, customerId, productId, rating, content, status);
         }
 
         public async Task PublishAsync(IProductReviewPublicationPolicy publicationPolicy, CancellationToken cancellationToken = default)
