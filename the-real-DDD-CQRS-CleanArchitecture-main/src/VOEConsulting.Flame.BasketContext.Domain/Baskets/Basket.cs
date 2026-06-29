@@ -5,7 +5,6 @@ using VOEConsulting.Flame.Common.Domain.Exceptions;
 
 namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
 {
-    [Table("BASKETS")]
     public sealed class Basket : AggregateRoot<Basket>
     {
         public IDictionary<Seller, (IList<BasketItem> Items, decimal ShippingAmountLeft)> BasketItems { get; private set; }
@@ -24,6 +23,13 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
 
         public void AddItem(BasketItem basketItem)
         {
+            var nameAlreadyExists = BasketItems.Values
+                .SelectMany(v => v.Items)
+                .Any(item => item.Name == basketItem.Name);
+
+            if (nameAlreadyExists)
+                throw new ValidationException($"An item named '{basketItem.Name}' already exists in this basket.");
+
             if (BasketItems.TryGetValue(basketItem.Seller, out (IList<BasketItem> Items, decimal ShippingAmountLeft) value))
             {
                 value.Items.Add(basketItem);
@@ -40,11 +46,6 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
             //basket.RaiseDomainEvent(new BasketCreatedEvent(basket.Id, customer.Id));
             return basket;
         }
-        public void MarkAsModified(DbContext context)
-        {
-            context.Entry(this).State = EntityState.Modified;
-        }
-
         public void UpdateItemCount(BasketItem basketItem, int count)
         {
             BasketItems.EnsureKeyExists(basketItem.Seller);

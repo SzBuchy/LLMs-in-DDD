@@ -24,6 +24,9 @@ public class BasketItemConfiguration : IEntityTypeConfiguration<BasketItemEntity
         builder.Property(bi => bi.PricePerUnit)
             .IsRequired();
 
+        builder.Property(bi => bi.IsActive)
+            .IsRequired();
+
         builder.HasOne(bi => bi.Seller)
             .WithMany()
             .HasForeignKey(bi => bi.SellerId)

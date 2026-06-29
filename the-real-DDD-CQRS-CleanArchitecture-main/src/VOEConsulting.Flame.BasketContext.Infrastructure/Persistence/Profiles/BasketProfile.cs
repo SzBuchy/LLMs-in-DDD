@@ -47,6 +47,13 @@ public class BasketMappingProfile : Profile
                 var seller = context.Mapper.Map<Seller>(entity.Seller);
                 var quantity = Quantity.Create(entity.QuantityValue, entity.QuantityLimit, entity.PricePerUnit);
                 return BasketItem.Create(entity.Name, quantity, entity.ImageUrl, seller, entity.Id);
+            })
+            .AfterMap((entity, domain) =>
+            {
+                // BasketItem.Create always starts active - reapply the persisted state
+                // through the same domain method used everywhere else to deactivate it.
+                if (!entity.IsActive && domain.IsActive)
+                    domain.Deactivate();
             });
 
         CreateMap<SellerEntity, Seller>()

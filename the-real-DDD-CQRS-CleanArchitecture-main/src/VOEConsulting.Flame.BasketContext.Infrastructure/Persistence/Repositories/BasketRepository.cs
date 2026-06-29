@@ -61,11 +61,6 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure.Persistence.Repositor
             if (basketEntity is null)
                 throw new FlameApplicationException("Basket is doesn't exist");
 
-            var existingBasketItem = basketEntity.BasketItems.FirstOrDefault(x => x.Name == basketItem.Name);
-
-            if (existingBasketItem is not null)
-                throw new FlameApplicationException("This basket item already exists");
-
             // Check if the seller already exists in the database
             var existingSeller = await _dbContext.Sellers
                 .FirstOrDefaultAsync(s => s.Name == basketItem.Seller.Name);

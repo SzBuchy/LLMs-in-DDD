@@ -35,5 +35,13 @@ public class Order : BaseEntity, IAggregateRoot
     //https://msdn.microsoft.com/en-us/library/e78dcd75(v=vs.110).aspx 
     public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
 
-
+    public decimal Total()
+    {
+        var total = 0m;
+        foreach (var item in _orderItems)
+        {
+            total += item.UnitPrice * item.Units;
+        }
+        return total;
+    }
 }

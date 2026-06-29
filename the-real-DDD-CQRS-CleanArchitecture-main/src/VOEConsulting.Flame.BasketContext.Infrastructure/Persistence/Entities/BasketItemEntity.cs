@@ -8,6 +8,7 @@
         public int QuantityValue { get; set; }
         public int QuantityLimit { get; set; }
         public decimal PricePerUnit { get; set; }
+        public bool IsActive { get; set; }
         public Guid SellerId { get; set; }
         public Guid BasketId { get; set; }
         public SellerEntity Seller { get; set; } = null!;

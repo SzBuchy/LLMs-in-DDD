@@ -7,10 +7,10 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
         private Seller(Id<Seller> sellerId, string name, float rating, decimal shippingLimit, decimal shippingCost)
             : base(sellerId)
         {
-            Name = name;
-            Rating = rating;
-            ShippingLimit = shippingLimit;
-            ShippingCost = shippingCost;
+            Name = name.EnsureNonBlank();
+            Rating = rating.EnsureWithinRange(0f, 5f);
+            ShippingLimit = shippingLimit.EnsureNonNegative();
+            ShippingCost = shippingCost.EnsureNonNegative();
         }
 
         public static Seller Create(string name, float rating, decimal shippingLimit, decimal shippingCost, Id<Seller>? sellerId)
