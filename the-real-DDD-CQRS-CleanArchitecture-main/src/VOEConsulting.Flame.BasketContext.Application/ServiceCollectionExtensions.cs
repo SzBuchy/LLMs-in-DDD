@@ -1,8 +1,10 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using VOEConsulting.Flame.Common.Domain.Events;
 using VOEConsulting.Flame.BasketContext.Application.Behaviours;
 using VOEConsulting.Flame.BasketContext.Application.Events.Dispatchers;
+
+using VOEConsulting.Flame.BasketContext.Domain.Reviews.Services;
 
 namespace VOEConsulting.Flame.BasketContext.Application
 {
@@ -11,6 +13,7 @@ namespace VOEConsulting.Flame.BasketContext.Application
         public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
         {
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+            services.AddScoped<IProductReviewPublicationPolicy, ProductReviewPublicationPolicy>();
 
             services.AddMediatR(configuration =>
             {

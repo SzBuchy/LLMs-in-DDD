@@ -1,4 +1,4 @@
-﻿@model CatalogItemViewModel
+@model CatalogItemViewModel
 
 <form asp-page="/Basket/Index" method="post">
     <img class="esh-catalog-thumbnail" src="@Model.PictureUri" />
@@ -8,6 +8,9 @@
     </div>
     <div class="esh-catalog-price">
         <span>@Model.Price.ToString("N2")</span>
+    </div>
+    <div style="margin-top: 8px; margin-bottom: 8px;">
+        <a asp-page="/Reviews/Create" asp-route-productId="@Model.Id" style="font-size: 0.8rem; color: #00a69c; font-weight: bold; text-decoration: none;">[ NAPISZ RECENZJĘ ]</a>
     </div>
     <input type="hidden" asp-for="@Model.Id" name="id" />
     <input type="hidden" asp-for="@Model.Name" name="name" />
