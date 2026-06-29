@@ -17,7 +17,7 @@ public class DeleteCatalogItemEndpoint(IRepository<CatalogItem> itemRepository) 
     public override void Configure()
     {
         Delete("api/catalog-items/{catalogItemId}");
-        Roles(BlazorShared.Authorization.Constants.Roles.PRODUCT_MANAGERS);
+        Roles(Microsoft.eShopWeb.ApplicationCore.Constants.AuthorizationConstants.Roles.PRODUCT_MANAGERS);
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
         Description(d =>
         {

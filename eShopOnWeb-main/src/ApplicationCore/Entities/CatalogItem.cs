@@ -1,5 +1,4 @@
-﻿using System;
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 
 namespace Microsoft.eShopWeb.ApplicationCore.Entities;
@@ -53,14 +52,15 @@ public class CatalogItem : BaseEntity, IAggregateRoot
         CatalogTypeId = catalogTypeId;
     }
 
-    public void UpdatePictureUri(string pictureName)
+    public void UpdatePictureUri(string pictureUri)
     {
-        if (string.IsNullOrEmpty(pictureName))
+        if (string.IsNullOrEmpty(pictureUri))
         {
             PictureUri = string.Empty;
             return;
         }
-        PictureUri = $"images\\products\\{pictureName}?{new DateTime().Ticks}";
+
+        PictureUri = pictureUri;
     }
 
     public readonly record struct CatalogItemDetails

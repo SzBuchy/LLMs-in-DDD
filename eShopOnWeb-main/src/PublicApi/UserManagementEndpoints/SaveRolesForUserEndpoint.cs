@@ -16,7 +16,7 @@ public class SaveRolesForUserEndpoint(UserManager<ApplicationUser> userManager) 
     public override void Configure()
     {
         Put("api/users/{userId}/roles");
-        Roles(BlazorShared.Authorization.Constants.Roles.ADMINISTRATORS);
+        Roles(Microsoft.eShopWeb.ApplicationCore.Constants.AuthorizationConstants.Roles.ADMINISTRATORS);
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
         Description(d =>
         {

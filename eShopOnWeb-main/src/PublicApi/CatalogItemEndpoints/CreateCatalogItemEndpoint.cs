@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,10 +17,12 @@ namespace Microsoft.eShopWeb.PublicApi.CatalogItemEndpoints;
 public class CreateCatalogItemEndpoint(IRepository<CatalogItem> itemRepository, IUriComposer uriComposer)
     : Endpoint<CreateCatalogItemRequest, CreateCatalogItemResponse>
 {
+    private const string DefaultCatalogItemPictureUri = "images\\products\\eCatalog-item-default.png";
+
     public override void Configure()
     {
         Post("api/catalog-items");
-        Roles(BlazorShared.Authorization.Constants.Roles.PRODUCT_MANAGERS);
+        Roles(Microsoft.eShopWeb.ApplicationCore.Constants.AuthorizationConstants.Roles.PRODUCT_MANAGERS);
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
         Description(d =>
             d.Produces<CreateCatalogItemResponse>()
@@ -46,7 +49,7 @@ public class CreateCatalogItemEndpoint(IRepository<CatalogItem> itemRepository, 
             //  pointed out by the community. More info in this issue: https://github.com/dotnet-architecture/eShopOnWeb/issues/537 
             //  In production, we recommend uploading to a blob storage and deliver the image via CDN after a verification process.
 
-            newItem.UpdatePictureUri("eCatalog-item-default.png");
+            newItem.UpdatePictureUri($"{DefaultCatalogItemPictureUri}?{DateTimeOffset.UtcNow.Ticks}");
             await itemRepository.UpdateAsync(newItem, ct);
         }
 

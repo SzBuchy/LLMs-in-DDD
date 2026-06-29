@@ -6,7 +6,10 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit.Factories
     {
         public static Basket Create(decimal? taxPercentage = null, Customer? customer = null)
         {
-            return Basket.Create(taxPercentage ?? TaxAmount, customer?? BasketData.Customer);
+            var basket = Basket.Create(taxPercentage ?? TaxAmount, customer ?? BasketData.Customer);
+            basket.ClearEvents();
+
+            return basket;
         }
     }
 }

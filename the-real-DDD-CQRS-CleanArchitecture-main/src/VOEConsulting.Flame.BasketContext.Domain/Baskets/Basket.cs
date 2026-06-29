@@ -5,7 +5,6 @@ using VOEConsulting.Flame.Common.Domain.Exceptions;
 
 namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
 {
-    [Table("BASKETS")]
     public sealed class Basket : AggregateRoot<Basket>
     {
         public IDictionary<Seller, (IList<BasketItem> Items, decimal ShippingAmountLeft)> BasketItems { get; private set; }
@@ -14,7 +13,8 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
         public Customer Customer { get; private set; }
         public Id<Coupon>? CouponId { get; private set; } = null;
 
-        private Basket(decimal taxPercentage, Customer customer)
+        private Basket(decimal taxPercentage, Customer customer, Id<Basket>? id = null)
+            : base(id ?? Id<Basket>.New())
         {
             BasketItems = new Dictionary<Seller, (IList<BasketItem>, decimal)>();
             TaxPercentage = taxPercentage.EnsurePositive();
@@ -24,6 +24,11 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
 
         public void AddItem(BasketItem basketItem)
         {
+            AddItem(basketItem, raiseDomainEvent: true);
+        }
+
+        private void AddItem(BasketItem basketItem, bool raiseDomainEvent)
+        {
             if (BasketItems.TryGetValue(basketItem.Seller, out (IList<BasketItem> Items, decimal ShippingAmountLeft) value))
             {
                 value.Items.Add(basketItem);
@@ -31,18 +36,39 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
             else
                 BasketItems.Add(basketItem.Seller, (new List<BasketItem> { basketItem }, basketItem.Seller.ShippingLimit));
 
-            RaiseDomainEvent(new BasketItemAddedEvent(this.Id, basketItem));
+            if (raiseDomainEvent)
+            {
+                RaiseDomainEvent(new BasketItemAddedEvent(this.Id, basketItem));
+            }
         }
 
         public static Basket Create(decimal taxPercentage, Customer customer)
         {
             var basket = new Basket(taxPercentage, customer);
-            //basket.RaiseDomainEvent(new BasketCreatedEvent(basket.Id, customer.Id));
+            basket.RaiseDomainEvent(new BasketCreatedEvent(basket.Id, customer.Id));
             return basket;
         }
-        public void MarkAsModified(DbContext context)
+
+        public static Basket Rehydrate(
+            Id<Basket> id,
+            decimal taxPercentage,
+            decimal totalAmount,
+            Customer customer,
+            Id<Coupon>? couponId,
+            IEnumerable<BasketItem> basketItems)
         {
-            context.Entry(this).State = EntityState.Modified;
+            var basket = new Basket(taxPercentage, customer, id)
+            {
+                TotalAmount = totalAmount,
+                CouponId = couponId
+            };
+
+            foreach (var basketItem in basketItems)
+            {
+                basket.AddItem(basketItem, raiseDomainEvent: false);
+            }
+
+            return basket;
         }
 
         public void UpdateItemCount(BasketItem basketItem, int count)

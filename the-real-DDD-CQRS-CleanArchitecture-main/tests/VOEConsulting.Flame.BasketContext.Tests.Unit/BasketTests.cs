@@ -27,6 +27,20 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit
         }
 
         [Fact]
+        public void Create_WhenValidArgumentProvided_ShouldRaiseBasketCreatedEvent()
+        {
+            // Arrange
+            var customer = TestFactories.CustomerFactory.Create();
+
+            // Act
+            var basket = Basket.Create(.18m, customer);
+
+            // Assert
+            var expectedEvent = new BasketCreatedEvent(basket.Id, customer.Id);
+            basket.DomainEvents.Single().Should().BeEquivalentEventTo(expectedEvent);
+        }
+
+        [Fact]
         public void AddItem_WhenBasketItemIsAdded_ShouldRaiseBasketItemAddedEvent()
         {
             // Arrange

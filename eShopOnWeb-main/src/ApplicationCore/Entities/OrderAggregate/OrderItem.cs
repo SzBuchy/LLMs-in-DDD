@@ -1,4 +1,6 @@
-﻿namespace Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
+using Ardalis.GuardClauses;
+
+namespace Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 
 public class OrderItem : BaseEntity
 {
@@ -11,6 +13,10 @@ public class OrderItem : BaseEntity
 
     public OrderItem(CatalogItemOrdered itemOrdered, decimal unitPrice, int units)
     {
+        Guard.Against.Null(itemOrdered, nameof(itemOrdered));
+        Guard.Against.NegativeOrZero(unitPrice, nameof(unitPrice));
+        Guard.Against.OutOfRange(units, nameof(units), 1, int.MaxValue);
+
         ItemOrdered = itemOrdered;
         UnitPrice = unitPrice;
         Units = units;

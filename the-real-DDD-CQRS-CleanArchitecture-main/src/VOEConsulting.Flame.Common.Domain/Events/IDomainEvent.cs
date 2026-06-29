@@ -1,8 +1,6 @@
-﻿using MediatR;
-
-namespace VOEConsulting.Flame.Common.Domain.Events
+﻿namespace VOEConsulting.Flame.Common.Domain.Events
 {
-    public interface IDomainEvent : INotification
+    public interface IDomainEvent
     {
         int Version { get; }
 

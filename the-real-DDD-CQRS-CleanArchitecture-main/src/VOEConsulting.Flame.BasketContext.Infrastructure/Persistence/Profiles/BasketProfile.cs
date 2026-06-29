@@ -24,22 +24,16 @@ public class BasketMappingProfile : Profile
             .ConstructUsing((entity, context) =>
             {
                 var customer = context.Mapper.Map<Customer>(entity.Customer);
-                return Basket.Create(entity.TaxPercentage, customer);
+                var basketItems = entity.BasketItems?.Select(context.Mapper.Map<BasketItem>) ?? [];
+                return Basket.Rehydrate(
+                    entity.Id,
+                    entity.TaxPercentage,
+                    entity.TotalAmount,
+                    customer,
+                    entity.CouponId,
+                    basketItems);
             })
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.BasketItems, opt => opt.Ignore()) // Manual mapping for complex structure
-            .AfterMap((entity, domain, context) =>
-            {
-                if (entity.BasketItems != null)
-                {
-                    foreach (var itemEntity in entity.BasketItems)
-                    {
-                        var seller = context.Mapper.Map<Seller>(itemEntity.Seller);
-                        var basketItem = context.Mapper.Map<BasketItem>(itemEntity);
-                        domain.AddItem(basketItem);
-                    }
-                }
-            });
+            .ForMember(dest => dest.BasketItems, opt => opt.Ignore());
 
         CreateMap<BasketItemEntity, BasketItem>()
             .ConstructUsing((entity, context) =>

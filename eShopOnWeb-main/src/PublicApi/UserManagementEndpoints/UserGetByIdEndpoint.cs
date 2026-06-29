@@ -16,7 +16,7 @@ public class UserGetByIdEndpoint (UserManager<ApplicationUser> userManager) : En
     public override void Configure()
     {
         Get("api/users/{userId}");
-        Roles(BlazorShared.Authorization.Constants.Roles.ADMINISTRATORS);
+        Roles(Microsoft.eShopWeb.ApplicationCore.Constants.AuthorizationConstants.Roles.ADMINISTRATORS);
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
         Description(d =>
             d.Produces<GetUserResponse>()

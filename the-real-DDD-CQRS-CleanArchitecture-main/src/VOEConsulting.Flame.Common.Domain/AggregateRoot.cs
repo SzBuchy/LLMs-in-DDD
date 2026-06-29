@@ -16,6 +16,11 @@ namespace VOEConsulting.Flame.Common.Domain
         private readonly IList<IDomainEvent> _domainEvents = [];
         public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
+        protected AggregateRoot() { }
+
+        protected AggregateRoot(Id<TModel> id)
+            : base(id) { }
+
         public IReadOnlyCollection<IDomainEvent> PopDomainEvents()
         {
             var events = _domainEvents.ToList();

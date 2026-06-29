@@ -25,7 +25,7 @@ namespace VOEConsulting.Flame.BasketContext.Application
 
             // Register all domain event handlers
             services.Scan(scan => scan
-                .FromAssemblyOf<IDomainEventHandler<IDomainEvent>>()
+                .FromAssemblyOf<ServiceCollectionExtensions>()
                 .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
