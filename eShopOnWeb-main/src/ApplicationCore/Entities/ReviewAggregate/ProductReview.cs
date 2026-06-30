@@ -83,4 +83,24 @@ public class ProductReview : BaseEntity, IAggregateRoot
 
         Status = ReviewStatus.Withdrawn;
     }
+
+    public void Edit(int rating, string textContent)
+    {
+        if (Status != ReviewStatus.Published)
+        {
+            throw new InvalidOperationException("Only published reviews can be edited.");
+        }
+
+        Guard.Against.OutOfRange(rating, nameof(rating), 1, 5);
+        Guard.Against.NullOrEmpty(textContent, nameof(textContent));
+        
+        if (textContent.Length < 10 || textContent.Length > 500)
+        {
+            throw new ArgumentException("Text content length must be between 10 and 500 characters.", nameof(textContent));
+        }
+
+        Rating = rating;
+        TextContent = textContent;
+        Status = ReviewStatus.PendingModeration;
+    }
 }

@@ -13,8 +13,8 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
     {
         public Id<Customer> CustomerId { get; }
         public Id<Product> ProductId { get; }
-        public int Rating { get; }
-        public string Content { get; }
+        public int Rating { get; private set; }
+        public string Content { get; private set; }
         public ReviewStatus Status { get; private set; }
 
         private Review(Id<Customer> customerId, Id<Product> productId, int rating, string content)
@@ -104,6 +104,20 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Reviews
 
             Status = ReviewStatus.Rejected;
             RaiseDomainEvent(new ReviewRejectedEvent(this.Id));
+        }
+
+        public void Edit(int rating, string content)
+        {
+            if (Status != ReviewStatus.Published)
+            {
+                throw new ValidationException($"Only published reviews can be edited. Current status: {Status}");
+            }
+
+            Rating = rating.EnsureWithinRange(1, 5);
+            Content = content.EnsureNonNull().EnsureLengthInRange(10, 500);
+            Status = ReviewStatus.PendingModeration;
+
+            RaiseDomainEvent(new ReviewEditedEvent(this.Id));
         }
     }
 }

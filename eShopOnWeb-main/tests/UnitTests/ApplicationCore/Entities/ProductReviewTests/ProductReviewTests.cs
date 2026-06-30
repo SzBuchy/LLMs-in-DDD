@@ -198,4 +198,84 @@ public class ProductReviewTests
 
         Assert.Equal(ReviewStatus.Published, review.Status);
     }
+
+    [Fact]
+    public void EditUpdatesReviewAndResetsStatusToPendingModeration()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        review.Approve(); // Transition to Published
+        Assert.Equal(ReviewStatus.Published, review.Status);
+
+        string newTextContent = "This is a new valid text content for editing.";
+        int newRating = 3;
+
+        review.Edit(newRating, newTextContent);
+
+        Assert.Equal(newRating, review.Rating);
+        Assert.Equal(newTextContent, review.TextContent);
+        Assert.Equal(ReviewStatus.PendingModeration, review.Status);
+    }
+
+    [Theory]
+    [InlineData(ReviewStatus.PendingModeration)]
+    [InlineData(ReviewStatus.Rejected)]
+    [InlineData(ReviewStatus.Withdrawn)]
+    public void EditThrowsWhenReviewIsNotPublished(ReviewStatus status)
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        
+        // Setup initial status
+        if (status == ReviewStatus.Rejected)
+        {
+            review.Reject();
+        }
+        else if (status == ReviewStatus.Withdrawn)
+        {
+            review.Withdraw();
+        }
+        // If status is PendingModeration, do nothing (default)
+
+        Assert.Equal(status, review.Status);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => 
+            review.Edit(4, "This is another valid text content."));
+        Assert.Contains("Only published reviews can be edited", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(6)]
+    public void EditThrowsGivenRatingOutOfRange(int invalidRating)
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        review.Approve(); // Publish
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => 
+            review.Edit(invalidRating, _validTextContent));
+    }
+
+    [Theory]
+    [InlineData("Short")]
+    [InlineData("123456789")]
+    public void EditThrowsGivenTextContentTooShort(string invalidTextContent)
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        review.Approve(); // Publish
+
+        var exception = Assert.Throws<ArgumentException>(() => 
+            review.Edit(_validRating, invalidTextContent));
+        Assert.Contains("between 10 and 500 characters", exception.Message);
+    }
+
+    [Fact]
+    public void EditThrowsGivenTextContentTooLong()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        review.Approve(); // Publish
+
+        var longText = new string('a', 501);
+        var exception = Assert.Throws<ArgumentException>(() => 
+            review.Edit(_validRating, longText));
+        Assert.Contains("between 10 and 500 characters", exception.Message);
+    }
 }

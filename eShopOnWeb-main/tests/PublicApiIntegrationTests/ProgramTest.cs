@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net.Http;
 
@@ -8,6 +8,8 @@ namespace PublicApiIntegrationTests;
 public class ProgramTest
 {
     private static WebApplicationFactory<Program> _application = new();
+
+    public static WebApplicationFactory<Program> App => _application;
 
     public static HttpClient NewClient
     {

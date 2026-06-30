@@ -1,0 +1,218 @@
+@page
+@model Microsoft.eShopWeb.Web.Pages.Reviews.EditModel
+@{
+    ViewData["Title"] = "Edytuj Recenzję Produktu";
+}
+
+<style>
+    .review-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 15px;
+    }
+
+    .review-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 30px;
+        display: flex;
+        flex-direction: row;
+        gap: 30px;
+        transition: transform 0.3s ease;
+    }
+
+    .review-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .product-info-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        border-right: 1px solid #eee;
+        padding-right: 30px;
+    }
+
+    .product-review-img {
+        max-width: 180px;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .product-review-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .form-panel {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .review-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #00a69c;
+        margin-bottom: 20px;
+    }
+
+    .form-group-custom {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-label-custom {
+        font-weight: 600;
+        color: #555;
+        font-size: 0.95rem;
+    }
+
+    .input-rating-select {
+        height: 45px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 0 12px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+        background-color: #fff;
+    }
+
+    .input-rating-select:focus {
+        border-color: #00a69c;
+    }
+
+    .textarea-custom {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 12px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+    }
+
+    .textarea-custom:focus {
+        border-color: #00a69c;
+    }
+
+    .validation-summary-errors-custom {
+        background-color: #ffeef0;
+        border-left: 4px solid #f85149;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        color: #f85149;
+    }
+
+    .btn-submit-review {
+        background-color: #83d01b;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 12px 24px;
+        cursor: pointer;
+        transition: background-color 0.25s ease, transform 0.1s ease;
+        align-self: flex-start;
+        box-shadow: 0 4px 12px rgba(131, 208, 27, 0.2);
+    }
+
+    .btn-submit-review:hover {
+        background-color: #71b417;
+        transform: translateY(-1px);
+    }
+
+    .btn-submit-review:active {
+        transform: translateY(1px);
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 15px;
+        color: #00a69c;
+        font-weight: 600;
+        transition: color 0.25s ease;
+    }
+
+    .back-link:hover {
+        color: #008f86;
+    }
+
+    @@media (max-width: 768px) {
+        .review-card {
+            flex-direction: column;
+        }
+        .product-info-panel {
+            border-right: none;
+            border-bottom: 1px solid #eee;
+            padding-right: 0;
+            padding-bottom: 20px;
+        }
+    }
+</style>
+
+<div class="review-container">
+    <div class="review-card">
+        <div class="product-info-panel">
+            <img class="product-review-img" src="@Model.ProductPictureUri" alt="@Model.ProductName" />
+            <h2 class="product-review-name">@Model.ProductName</h2>
+            <p style="color: #666; font-size: 0.9rem;">Dzieląc się swoją opinią pomagasz innym klientom w dokonaniu wyboru.</p>
+        </div>
+
+        <div class="form-panel">
+            <h1 class="review-title">Edytuj recenzję</h1>
+
+            <form method="post">
+                <input type="hidden" asp-for="ReviewId" />
+                <input type="hidden" asp-for="ProductId" />
+
+                @if (!ModelState.IsValid)
+                {
+                    <div class="validation-summary-errors-custom">
+                        <div asp-validation-summary="All"></div>
+                    </div>
+                }
+
+                <div class="form-group-custom">
+                    <label asp-for="Rating" class="form-label-custom">Twoja ocena</label>
+                    <select asp-for="Rating" class="input-rating-select">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 / 5)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 / 5)</option>
+                        <option value="3">⭐⭐⭐ (3 / 5)</option>
+                        <option value="2">⭐⭐ (2 / 5)</option>
+                        <option value="1">⭐ (1 / 5)</option>
+                    </select>
+                    <span asp-validation-for="Rating" style="color: #f85149; font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="form-group-custom">
+                    <label asp-for="TextContent" class="form-label-custom">Treść opinii</label>
+                    <textarea asp-for="TextContent" class="textarea-custom" placeholder="Opisz swoje wrażenia z użytkowania tego produktu (od 10 do 500 znaków)..."></textarea>
+                    <span asp-validation-for="TextContent" style="color: #f85149; font-size: 0.85rem;"></span>
+                </div>
+
+                <div style="display: flex; gap: 15px; align-items: center; margin-top: 10px;">
+                    <button type="submit" class="btn-submit-review">Zapisz recenzję</button>
+                    <a asp-page="/Index" class="back-link">Anuluj</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

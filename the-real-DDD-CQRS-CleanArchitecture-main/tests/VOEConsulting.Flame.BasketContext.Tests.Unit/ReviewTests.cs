@@ -334,5 +334,79 @@ namespace VOEConsulting.Flame.BasketContext.Tests.Unit
             // Assert
             result.Should().BeFalse();
         }
+
+        [Fact]
+        public async Task Edit_WhenStatusIsPublished_ShouldUpdateRatingAndContentAndTransitionStatusToPendingModerationAndRaiseReviewEditedEvent()
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 4, ValidContent);
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+            await review.PublishAsync(policy);
+            review.ClearEvents();
+
+            var newContent = "This is a new valid content for edited review.";
+            var expectedEvent = new ReviewEditedEvent(review.Id);
+
+            // Act
+            review.Edit(5, newContent);
+
+            // Assert
+            review.Rating.Should().Be(5);
+            review.Content.Should().Be(newContent);
+            review.Status.Should().Be(ReviewStatus.PendingModeration);
+
+            var actualEvent = review.DomainEvents.Single();
+            actualEvent.Should().BeEquivalentEventTo(expectedEvent);
+        }
+
+        [Fact]
+        public void Edit_WhenStatusIsNotPublished_ShouldThrowValidationException()
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 4, ValidContent);
+
+            // Act
+            var action = () => review.Edit(5, "This is some new content.");
+
+            // Assert
+            action.Should().Throw<ValidationException>();
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(6)]
+        public async Task Edit_WhenRatingIsOutOfRange_ShouldThrowValidationException(int invalidRating)
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 4, ValidContent);
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+            await review.PublishAsync(policy);
+
+            // Act
+            var action = () => review.Edit(invalidRating, "This is some new content.");
+
+            // Assert
+            action.Should().Throw<ValidationException>();
+        }
+
+        [Theory]
+        [InlineData("Short")]
+        [InlineData("")]
+        public async Task Edit_WhenContentIsTooShort_ShouldThrowValidationException(string tooShortContent)
+        {
+            // Arrange
+            var review = Review.Create(_customerId, _productId, 4, ValidContent);
+            var policy = Substitute.For<IProductReviewPublicationPolicy>();
+            policy.CanPublishAsync(_customerId, _productId, Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+            await review.PublishAsync(policy);
+
+            // Act
+            var action = () => review.Edit(5, tooShortContent);
+
+            // Assert
+            action.Should().Throw<ValidationException>();
+        }
     }
 }

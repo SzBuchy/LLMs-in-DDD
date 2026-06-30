@@ -140,4 +140,81 @@ public class ProductReviewServiceTests
         await Assert.ThrowsAsync<ArgumentException>(() => 
             service.AddProductReviewAsync(_validCustomerId, _validCatalogItemId, _validRating, invalidTextContent));
     }
+
+    [Fact]
+    public async Task GetPublishedReviewByCustomerAndProductReturnsPublishedReview()
+    {
+        var publishedReview = new ProductReview(_validCustomerId, _validCatalogItemId, 4, "Another valid review text.");
+        publishedReview.Approve(); // Publish
+        _mockReviewRepository.GetByProductIdAsync(_validCatalogItemId, Arg.Any<CancellationToken>())
+            .Returns(new List<ProductReview> { publishedReview });
+
+        var service = CreateService();
+        var result = await service.GetPublishedReviewByCustomerAndProductAsync(_validCustomerId, _validCatalogItemId);
+
+        Assert.NotNull(result);
+        Assert.Equal(publishedReview.Id, result.Id);
+        Assert.Equal(ReviewStatus.Published, result.Status);
+    }
+
+    [Fact]
+    public async Task GetReviewByIdReturnsCorrectReview()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, _validRating, _validTextContent);
+        int testReviewId = 99;
+        _mockReviewRepository.GetByIdAsync(testReviewId, Arg.Any<CancellationToken>()).Returns(review);
+
+        var service = CreateService();
+        var result = await service.GetReviewByIdAsync(testReviewId);
+
+        Assert.NotNull(result);
+        Assert.Equal(review.CustomerId, result.CustomerId);
+    }
+
+    [Fact]
+    public async Task EditProductReviewSuccessfullyEditsAndUpdates()
+    {
+        var review = new ProductReview(_validCustomerId, _validCatalogItemId, 5, _validTextContent);
+        review.Approve(); // Must be published to edit
+        int testReviewId = 99;
+
+        _mockReviewRepository.GetByIdAsync(testReviewId, Arg.Any<CancellationToken>()).Returns(review);
+
+        var service = CreateService();
+        var result = await service.EditProductReviewAsync(_validCustomerId, testReviewId, 3, "New edited review text here.");
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Rating);
+        Assert.Equal("New edited review text here.", result.TextContent);
+        Assert.Equal(ReviewStatus.PendingModeration, result.Status);
+
+        await _mockReviewRepository.Received(1).UpdateAsync(review, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task EditProductReviewThrowsWhenNotFound()
+    {
+        int testReviewId = 99;
+        _mockReviewRepository.GetByIdAsync(testReviewId, Arg.Any<CancellationToken>()).Returns((ProductReview?)null);
+
+        var service = CreateService();
+
+        await Assert.ThrowsAsync<ProductReviewNotFoundException>(() => 
+            service.EditProductReviewAsync(_validCustomerId, testReviewId, 3, "New edited review text here."));
+    }
+
+    [Fact]
+    public async Task EditProductReviewThrowsWhenUserDoesNotOwnReview()
+    {
+        var review = new ProductReview("other-customer", _validCatalogItemId, 5, _validTextContent);
+        review.Approve();
+        int testReviewId = 99;
+        _mockReviewRepository.GetByIdAsync(testReviewId, Arg.Any<CancellationToken>()).Returns(review);
+
+        var service = CreateService();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            service.EditProductReviewAsync(_validCustomerId, testReviewId, 3, "New edited review text here."));
+        Assert.Contains("only edit your own reviews", exception.Message);
+    }
 }

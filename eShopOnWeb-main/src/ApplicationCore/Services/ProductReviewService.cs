@@ -45,4 +45,40 @@ public class ProductReviewService : IProductReviewService
         var newReview = new ProductReview(customerId, catalogItemId, rating, textContent);
         return await _reviewRepository.AddAsync(newReview, cancellationToken);
     }
+
+    public async Task<ProductReview?> GetPublishedReviewByCustomerAndProductAsync(string customerId, int catalogItemId, CancellationToken cancellationToken = default)
+    {
+        Guard.Against.NullOrEmpty(customerId, nameof(customerId));
+        Guard.Against.OutOfRange(catalogItemId, nameof(catalogItemId), 1, int.MaxValue);
+
+        var reviews = await _reviewRepository.GetByProductIdAsync(catalogItemId, cancellationToken);
+        return reviews.FirstOrDefault(r => r.CustomerId == customerId && r.Status == ReviewStatus.Published);
+    }
+
+    public async Task<ProductReview?> GetReviewByIdAsync(int reviewId, CancellationToken cancellationToken = default)
+    {
+        Guard.Against.OutOfRange(reviewId, nameof(reviewId), 1, int.MaxValue);
+        return await _reviewRepository.GetByIdAsync(reviewId, cancellationToken);
+    }
+
+    public async Task<ProductReview> EditProductReviewAsync(string customerId, int reviewId, int rating, string textContent, CancellationToken cancellationToken = default)
+    {
+        Guard.Against.NullOrEmpty(customerId, nameof(customerId));
+        Guard.Against.OutOfRange(reviewId, nameof(reviewId), 1, int.MaxValue);
+
+        var review = await _reviewRepository.GetByIdAsync(reviewId, cancellationToken);
+        if (review == null)
+        {
+            throw new ProductReviewNotFoundException(reviewId);
+        }
+
+        if (review.CustomerId != customerId)
+        {
+            throw new InvalidOperationException("You can only edit your own reviews.");
+        }
+
+        review.Edit(rating, textContent);
+        await _reviewRepository.UpdateAsync(review, cancellationToken);
+        return review;
+    }
 }
