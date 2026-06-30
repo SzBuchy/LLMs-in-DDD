@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Ardalis.Result;
@@ -55,7 +55,7 @@ public class BasketService : IBasketService
             if (quantities.TryGetValue(item.Id.ToString(), out var quantity))
             {
                 if (_logger != null) _logger.LogInformation("Updating quantity of item ID:{id} to {quantity}.",item.Id, quantity);
-                item.SetQuantity(quantity);
+                basket.UpdateQuantity(item.Id, quantity);
             }
         }
         basket.RemoveEmptyItems();

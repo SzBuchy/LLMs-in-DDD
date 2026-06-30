@@ -1,8 +1,12 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using VOEConsulting.Flame.BasketContext.Application.Baskets.Commands.AddItemToBasket;
 using VOEConsulting.Flame.BasketContext.Application.Baskets.Commands.CreateBasket;
 using VOEConsulting.Flame.BasketContext.Application.Baskets.Queries.GetBasket;
+using VOEConsulting.Flame.BasketContext.Application.Baskets.Commands.CalculateTotalAmount;
+using VOEConsulting.Flame.BasketContext.Application.Baskets.Commands.ClearBasket;
+using VOEConsulting.Flame.BasketContext.Application.Baskets.Commands.DeleteBasketItem;
+using VOEConsulting.Flame.BasketContext.Application.Baskets.Commands.UpdateBasketItem;
 
 namespace VOEConsulting.Flame.BasketContext.Api.Controllers
 {
@@ -44,11 +48,49 @@ namespace VOEConsulting.Flame.BasketContext.Api.Controllers
                 return HandleError(result.Error);
         }
 
+        [HttpPut("{id}/items/{itemId}")]
+        public async Task<IActionResult> UpdateBasketItemCount(Guid id, Guid itemId, [FromBody] UpdateItemCountRequest request)
+        {
+            var result = await _sender.Send(new UpdateBasketItemCountCommand(id, itemId, request.Quantity));
+            if (result.IsSuccess)
+                return Ok(result.Value);
+            return HandleError(result.Error);
+        }
+
+        [HttpDelete("{id}/items/{itemId}")]
+        public async Task<IActionResult> DeleteBasketItem(Guid id, Guid itemId)
+        {
+            var result = await _sender.Send(new DeleteBasketItemCommand(id, itemId));
+            if (result.IsSuccess)
+                return Ok(result.Value);
+            return HandleError(result.Error);
+        }
+
+        [HttpDelete("{id}/items")]
+        public async Task<IActionResult> ClearBasket(Guid id)
+        {
+            var result = await _sender.Send(new ClearBasketCommand(id));
+            if (result.IsSuccess)
+                return Ok(result.Value);
+            return HandleError(result.Error);
+        }
+
+        [HttpPost("{id}/calculate-total")]
+        public async Task<IActionResult> CalculateTotalAmount(Guid id)
+        {
+            var result = await _sender.Send(new CalculateTotalAmountCommand(id));
+            if (result.IsSuccess)
+                return Ok(result.Value);
+            return HandleError(result.Error);
+        }
+
         [HttpGet("/test")]
         public string Test()
         {
             return "hello";
         }
     }
+
+    public record UpdateItemCountRequest(int Quantity);
 
 }

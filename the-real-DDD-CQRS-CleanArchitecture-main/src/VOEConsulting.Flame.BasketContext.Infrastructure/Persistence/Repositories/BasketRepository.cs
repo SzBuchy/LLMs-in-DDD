@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using VOEConsulting.Flame.BasketContext.Application.Repositories;
 using VOEConsulting.Flame.BasketContext.Domain.Baskets;
@@ -24,71 +24,7 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure.Persistence.Repositor
             await _dbContext.AddAsync(basketEntity);
         }
 
-        public async Task RemoveBasketItemAsync(Guid basketId, Guid basketItemId)
-        {
-            // Load the basket
-            var basket = await GetByBasketEntityIdAsync(basketId);
 
-            // Find the basket item to be removed
-            var basketItem = basket.BasketItems
-                .FirstOrDefault(bi => bi.Id == basketItemId)
-                ?? throw new FlameApplicationException("Basket item not found.");
-
-            // Get the associated seller
-            var seller = basketItem.Seller;
-
-            // Remove the basket item
-            _dbContext.BasketItems.Remove(basketItem);
-
-            // Check if any other basket items reference this seller
-            bool isSellerReferenced = _dbContext.BasketItems
-                .Any(bi => bi.Seller.Id == seller.Id && bi.Id != basketItemId);
-
-            if (!isSellerReferenced)
-            {
-                // Delete the seller if no other references exist
-                _dbContext.Sellers.Remove(seller);
-            }
-        }
-
-        public async Task AddBasketItemAsync(Guid basketId, BasketItem basketItem)
-        {
-            var basketItemEntity = _mapper.Map<BasketItemEntity>(basketItem);
-            basketItemEntity.BasketId = basketId;
-            // Load the basket
-            var basketEntity = await GetByBasketEntityIdAsync(basketId);
-
-            if (basketEntity is null)
-                throw new FlameApplicationException("Basket is doesn't exist");
-
-            var existingBasketItem = basketEntity.BasketItems.FirstOrDefault(x => x.Name == basketItem.Name);
-
-            if (existingBasketItem is not null)
-                throw new FlameApplicationException("This basket item already exists");
-
-            // Check if the seller already exists in the database
-            var existingSeller = await _dbContext.Sellers
-                .FirstOrDefaultAsync(s => s.Name == basketItem.Seller.Name);
-
-            // Reuse existing seller or associate the new one
-            if (existingSeller is not null)
-            {
-                // Reuse the existing seller
-                basketItemEntity.SellerId = existingSeller.Id;
-                basketItemEntity.Seller = null; // Avoid attaching the Seller again
-            }
-            else
-            {
-                // Use the new seller
-                basketItemEntity.SellerId = basketItemEntity.Seller.Id;
-                _dbContext.Sellers.Attach(basketItemEntity.Seller); // Attach the new Seller
-            }
-
-            // Add the basket item to the basket
-
-            await _dbContext.BasketItems.AddAsync(basketItemEntity);
-
-        }
 
         public Task DeleteAsync(Guid id)
         {
@@ -110,7 +46,9 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure.Persistence.Repositor
                              .Where(b => b.Id == id)
                              .FirstOrDefaultAsync();
 
-            return _mapper.Map<Basket>(basketEntity);
+            var basket = _mapper.Map<Basket>(basketEntity);
+            basket?.ClearEvents();
+            return basket;
         }
 
         private async Task<BasketEntity> GetByBasketEntityIdAsync(Guid basketId)
@@ -123,9 +61,70 @@ namespace VOEConsulting.Flame.BasketContext.Infrastructure.Persistence.Repositor
                 ?? throw new InvalidOperationException("Basket not found.");
         }
 
-        public Task UpdateAsync(Basket entity)
+        public async Task UpdateAsync(Basket basket)
         {
-            return Task.FromResult(_dbContext.Update(entity));
+            var existingEntity = await _dbContext.Baskets
+                .Include(b => b.BasketItems)
+                    .ThenInclude(bi => bi.Seller)
+                .FirstOrDefaultAsync(b => b.Id == basket.Id.Value);
+
+            if (existingEntity == null)
+            {
+                throw new FlameApplicationException("Basket not found.");
+            }
+
+            existingEntity.TaxPercentage = basket.TaxPercentage;
+            existingEntity.TotalAmount = basket.TotalAmount;
+            existingEntity.CouponId = basket.CouponId;
+            existingEntity.CustomerId = basket.Customer.Id;
+
+            var currentItemEntities = existingEntity.BasketItems.ToList();
+            var domainItems = basket.BasketItems.SelectMany(kvp => kvp.Value.Items).ToList();
+
+            // 1. Remove items no longer in domain
+            var domainItemIds = domainItems.Select(di => (Guid)di.Id).ToHashSet();
+            foreach (var existingItem in currentItemEntities)
+            {
+                if (!domainItemIds.Contains(existingItem.Id))
+                {
+                    _dbContext.Remove(existingItem);
+                }
+            }
+
+            // 2. Add or update items
+            foreach (var domainItem in domainItems)
+            {
+                var existingItem = currentItemEntities.FirstOrDefault(ei => ei.Id == (Guid)domainItem.Id);
+                if (existingItem != null)
+                {
+                    existingItem.QuantityValue = domainItem.Quantity.Value;
+                    existingItem.QuantityLimit = domainItem.Quantity.Limit;
+                    existingItem.PricePerUnit = domainItem.Quantity.PricePerUnit;
+                    existingItem.Name = domainItem.Name;
+                    existingItem.ImageUrl = domainItem.ImageUrl;
+                }
+                else
+                {
+                    var newItemEntity = _mapper.Map<BasketItemEntity>(domainItem);
+                    newItemEntity.BasketId = basket.Id.Value;
+
+                    var existingSeller = await _dbContext.Set<SellerEntity>()
+                        .FirstOrDefaultAsync(s => s.Name == domainItem.Seller.Name);
+
+                    if (existingSeller != null)
+                    {
+                        newItemEntity.SellerId = existingSeller.Id;
+                        newItemEntity.Seller = null;
+                    }
+                    else
+                    {
+                        newItemEntity.SellerId = domainItem.Seller.Id;
+                        _dbContext.Attach(newItemEntity.Seller);
+                    }
+
+                    await _dbContext.AddAsync(newItemEntity);
+                }
+            }
         }
 
         public async Task<bool> IsExistsAsync(Guid id)

@@ -1,11 +1,10 @@
-﻿using VOEConsulting.Flame.BasketContext.Domain.Baskets.Events;
+using VOEConsulting.Flame.BasketContext.Domain.Baskets.Events;
 using VOEConsulting.Flame.BasketContext.Domain.Baskets.Services;
 using VOEConsulting.Flame.BasketContext.Domain.Coupons;
 using VOEConsulting.Flame.Common.Domain.Exceptions;
 
 namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
 {
-    [Table("BASKETS")]
     public sealed class Basket : AggregateRoot<Basket>
     {
         public IDictionary<Seller, (IList<BasketItem> Items, decimal ShippingAmountLeft)> BasketItems { get; private set; }
@@ -40,10 +39,7 @@ namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
             //basket.RaiseDomainEvent(new BasketCreatedEvent(basket.Id, customer.Id));
             return basket;
         }
-        public void MarkAsModified(DbContext context)
-        {
-            context.Entry(this).State = EntityState.Modified;
-        }
+
 
         public void UpdateItemCount(BasketItem basketItem, int count)
         {

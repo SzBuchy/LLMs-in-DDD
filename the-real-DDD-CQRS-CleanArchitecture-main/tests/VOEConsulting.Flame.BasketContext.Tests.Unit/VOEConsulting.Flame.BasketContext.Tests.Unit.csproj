@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\VOEConsulting.Flame.BasketContext.Domain\VOEConsulting.Flame.BasketContext.Domain.csproj" />
+    <ProjectReference Include="..\..\src\VOEConsulting.Flame.BasketContext.Application\VOEConsulting.Flame.BasketContext.Application.csproj" />
     <ProjectReference Include="..\VOEConsulting.Flame.BasketContext.Tests.Data\VOEConsulting.Flame.BasketContext.Tests.Data.csproj" />
   </ItemGroup>
 

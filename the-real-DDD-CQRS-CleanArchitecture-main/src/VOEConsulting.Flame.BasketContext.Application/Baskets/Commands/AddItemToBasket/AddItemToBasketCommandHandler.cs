@@ -1,4 +1,4 @@
-﻿using VOEConsulting.Flame.BasketContext.Domain.Baskets;
+using VOEConsulting.Flame.BasketContext.Domain.Baskets;
 using VOEConsulting.Flame.Common.Domain;
 
 namespace VOEConsulting.Flame.BasketContext.Application.Baskets.Commands.AddItemToBasket
@@ -33,7 +33,7 @@ namespace VOEConsulting.Flame.BasketContext.Application.Baskets.Commands.AddItem
 
             _basket.AddItem(basketItem);
 
-            await _basketRepository.AddBasketItemAsync(request.BasketId, basketItem);
+            await _basketRepository.UpdateAsync(_basket);
 
             return Result.Success<Guid, IDomainError>(basketItem.Id);
         }

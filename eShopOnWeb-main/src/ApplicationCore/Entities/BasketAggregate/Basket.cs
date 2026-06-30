@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 
@@ -8,6 +8,7 @@ public class Basket : BaseEntity, IAggregateRoot
 {
     public string BuyerId { get; private set; }
     private readonly List<BasketItem> _items = new List<BasketItem>();
+    public IReadOnlyCollection<BasketItem> Items => _items.AsReadOnly();
 
     public int TotalItems => _items.Sum(i => i.Quantity);
 
@@ -31,6 +32,15 @@ public class Basket : BaseEntity, IAggregateRoot
     public void RemoveEmptyItems()
     {
         _items.RemoveAll(i => i.Quantity == 0);
+    }
+
+    public void UpdateQuantity(int basketItemId, int quantity)
+    {
+        var item = _items.FirstOrDefault(i => i.Id == basketItemId);
+        if (item != null)
+        {
+            item.SetQuantity(quantity);
+        }
     }
 
     public void SetNewBuyerId(string buyerId)

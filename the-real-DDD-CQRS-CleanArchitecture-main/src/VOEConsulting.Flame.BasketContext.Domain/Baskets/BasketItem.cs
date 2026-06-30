@@ -1,4 +1,4 @@
-﻿namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
+namespace VOEConsulting.Flame.BasketContext.Domain.Baskets
 {
     public sealed class BasketItem : Entity<BasketItem>
     {
@@ -27,7 +27,7 @@
 
         public void UpdateCount(int basketItemCount)
         {
-            basketItemCount.EnsureGreaterThan(MinItemCount);
+            basketItemCount.EnsureAtLeast(MinItemCount);
             Quantity = Quantity.UpdateValue(basketItemCount);
         }
         public void Deactivate()

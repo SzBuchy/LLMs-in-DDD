@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using MediatR;
@@ -31,16 +31,6 @@ public class OrderService : IOrderService
         _mediator = mediator;
     }
 
-    public decimal Total()
-    {
-        var total = 0m;
-        foreach (var item in _orderItems)
-        {
-            total += item.UnitPrice * item.Units;
-        }
-        return total;
-    }
-    
     public async Task CreateOrderAsync(int basketId, Address shippingAddress)
     {
         var basketSpec = new BasketWithItemsSpecification(basketId);

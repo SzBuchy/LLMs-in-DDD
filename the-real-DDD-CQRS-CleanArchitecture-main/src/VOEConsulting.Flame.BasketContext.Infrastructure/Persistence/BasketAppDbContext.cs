@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using VOEConsulting.Flame.BasketContext.Infrastructure.Entities;
 
@@ -10,9 +10,6 @@ public class BasketAppDbContext : DbContext
         : base(options) { }
 
     public DbSet<BasketEntity> Baskets { get; set; }
-    public DbSet<BasketItemEntity> BasketItems { get; set; }
-    public DbSet<CustomerEntity> Customers { get; set; }
-    public DbSet<SellerEntity> Sellers { get; set; }
     public DbSet<CouponEntity> Coupons { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
