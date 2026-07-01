@@ -1,0 +1,69 @@
+@page
+@model CheckoutModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container my-5 text-white">
+    <div class="row">
+        <div class="col-md-7 mb-4">
+            <div class="card bg-dark border-secondary p-4 esh-checkout-form-card">
+                <h3 class="card-title text-white mb-4">Shipping Address</h3>
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="ShippingAddress.Street" class="form-label"></label>
+                        <input asp-for="ShippingAddress.Street" class="form-control bg-dark text-white border-secondary" />
+                        <span asp-validation-for="ShippingAddress.Street" class="text-danger"></span>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label asp-for="ShippingAddress.City" class="form-label"></label>
+                            <input asp-for="ShippingAddress.City" class="form-control bg-dark text-white border-secondary" />
+                            <span asp-validation-for="ShippingAddress.City" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ShippingAddress.State" class="form-label"></label>
+                            <input asp-for="ShippingAddress.State" class="form-control bg-dark text-white border-secondary" />
+                            <span asp-validation-for="ShippingAddress.State" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label asp-for="ShippingAddress.Country" class="form-label"></label>
+                            <input asp-for="ShippingAddress.Country" class="form-control bg-dark text-white border-secondary" />
+                            <span asp-validation-for="ShippingAddress.Country" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ShippingAddress.ZipCode" class="form-label"></label>
+                            <input asp-for="ShippingAddress.ZipCode" class="form-control bg-dark text-white border-secondary" />
+                            <span asp-validation-for="ShippingAddress.ZipCode" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-2 fs-5">Place Order</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card bg-dark border-secondary p-4 esh-checkout-summary-card">
+                <h3 class="card-title text-white mb-4">Order Summary</h3>
+                <div class="mb-3 border-bottom border-secondary pb-3">
+                    @foreach (var item in Model.BasketModel.Items)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="fw-bold">@item.Quantity x</span>
+                                <span>@item.ProductName</span>
+                            </div>
+                            <span class="text-secondary">@((item.UnitPrice * item.Quantity).ToString("C"))</span>
+                        </div>
+                    }
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fs-4">Total:</span>
+                    <span class="fs-3 fw-bold text-gradient">@Model.BasketModel.Total().ToString("C")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

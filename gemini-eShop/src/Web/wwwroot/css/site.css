@@ -1,0 +1,274 @@
+/* Core Layout and Typography */
+body.esh-body {
+    background-color: #090a0f;
+    color: #e2e8f0;
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    z-index: 10;
+}
+
+/* Gradient text */
+.text-gradient {
+    background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* Custom Navbar */
+.esh-navbar {
+    background: rgba(13, 14, 22, 0.7) !important;
+    backdrop-filter: blur(12px);
+    padding: 1rem 0;
+}
+
+.esh-navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.esh-navbar .nav-link {
+    font-weight: 500;
+    color: #94a3b8 !important;
+    transition: color 0.2s ease;
+}
+
+.esh-navbar .nav-link:hover,
+.esh-navbar .nav-link.active {
+    color: #ffffff !important;
+}
+
+/* Hero Section */
+.esh-catalog-hero {
+    background: radial-gradient(circle at 90% 10%, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%), #0d0e16;
+    padding: 5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: -1rem;
+}
+
+.esh-catalog-hero h1 {
+    font-weight: 800;
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    color: #ffffff;
+}
+
+.esh-catalog-hero p {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    max-width: 600px;
+}
+
+/* Custom Filter Bar */
+.esh-catalog-filter-bar {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+}
+
+.esh-catalog-filter-bar .form-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.esh-catalog-filter-bar .form-select {
+    background-color: #12131a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+}
+
+.esh-catalog-filter-bar .form-select:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+}
+
+.esh-filter-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+    border: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.esh-filter-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+/* Product Card styling */
+.esh-product-card {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 20px !important;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.esh-product-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(168, 85, 247, 0.3) !important;
+    box-shadow: 0 12px 30px rgba(168, 85, 247, 0.1);
+}
+
+.esh-card-img-wrapper {
+    height: 220px;
+    background: #12131a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.esh-product-image {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.esh-product-card:hover .esh-product-image {
+    transform: scale(1.08);
+}
+
+.esh-product-card .card-body {
+    padding: 1.5rem;
+}
+
+.esh-product-card .card-title {
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.esh-add-to-cart-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.esh-add-to-cart-btn:hover {
+    background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+    border-color: transparent;
+    transform: scale(1.02);
+}
+
+/* Pagination */
+.pagination .page-link {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    margin: 0 4px;
+    border-radius: 8px;
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: rgba(255, 255, 255, 0.01);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #475569;
+}
+
+/* Basket / Orders Tables */
+.esh-basket-table-wrapper,
+.esh-orders-table-wrapper {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.table-dark {
+    background-color: transparent !important;
+}
+
+.table-dark th {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 1.25rem 1rem;
+}
+
+.table-dark td {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.esh-basket-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    background-color: #12131a;
+    border-color: rgba(255, 255, 255, 0.1);
+    padding: 0.25rem;
+}
+
+/* Cards & Modals */
+.esh-checkout-box-card,
+.esh-checkout-form-card,
+.esh-checkout-summary-card,
+.esh-success-card,
+.esh-auth-card {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 20px !important;
+}
+
+.form-control bg-dark {
+    background-color: #12131a !important;
+}
+
+.form-control:focus {
+    background-color: #12131a !important;
+    color: #ffffff !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2) !important;
+}
+
+/* Button Variants */
+.btn-primary {
+    background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%) !important;
+    border: none !important;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border: none !important;
+}
+
+.btn-success:hover {
+    opacity: 0.9;
+}
+
+/* Footer position */
+footer.footer {
+    margin-top: auto;
+    padding: 2rem 0;
+    background-color: #050609;
+}

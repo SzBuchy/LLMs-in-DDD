@@ -1,0 +1,62 @@
+@page
+@model DetailModel
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="container my-5 text-white">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Order Details - #@Model.OrderDetails.OrderNumber</h2>
+        <a asp-page="Index" class="btn btn-outline-light">Back to Orders</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="table-responsive p-4 bg-dark border border-secondary rounded mb-4">
+                <h4 class="mb-3">Items</h4>
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Description</th>
+                            <th>Unit Price</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderDetails.OrderItems)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@item.PictureUri" alt="@item.ProductName" class="img-thumbnail esh-basket-thumbnail" />
+                                </td>
+                                <td>@item.ProductName</td>
+                                <td>@item.UnitPrice.ToString("C")</td>
+                                <td class="text-center">@item.Units</td>
+                                <td class="text-end fw-bold text-gradient">@((item.UnitPrice * item.Units).ToString("C"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-dark border-secondary p-4 mb-4">
+                <h4 class="card-title text-white mb-3">Shipping Info</h4>
+                <div class="mb-3">
+                    <p class="mb-1 text-secondary">Address:</p>
+                    <p class="mb-0">@Model.OrderDetails.ShippingAddress.Street</p>
+                    <p class="mb-0">@Model.OrderDetails.ShippingAddress.City, @Model.OrderDetails.ShippingAddress.State @Model.OrderDetails.ShippingAddress.ZipCode</p>
+                    <p class="mb-0">@Model.OrderDetails.ShippingAddress.Country</p>
+                </div>
+                <hr class="border-secondary" />
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fs-5">Total Paid:</span>
+                    <span class="fs-4 fw-bold text-gradient">@Model.OrderDetails.Total.ToString("C")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

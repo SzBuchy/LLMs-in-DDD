@@ -1,0 +1,17 @@
+@page
+@model SuccessModel
+@{
+    ViewData["Title"] = "Order Success";
+}
+
+<div class="container my-5 text-center text-white">
+    <div class="py-5 bg-dark border border-secondary rounded p-4 esh-success-card">
+        <div class="fs-1 text-success mb-3">✓</div>
+        <h2 class="mb-3">Order Placed Successfully!</h2>
+        <p class="text-secondary mb-4 fs-5">Thank you for your purchase. Your order has been registered and is now being processed.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-page="/Index" class="btn btn-primary px-5 py-2">Continue Shopping</a>
+            <a asp-page="/Orders/Index" class="btn btn-outline-light px-5 py-2">My Orders</a>
+        </div>
+    </div>
+</div>

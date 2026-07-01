@@ -1,0 +1,298 @@
+@page "/"
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+
+<PageTitle>Admin Panel - Catalog Management</PageTitle>
+
+<div class="container my-5 text-white">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">Catalog Management</h2>
+        <button class="btn btn-primary px-4 py-2" @onclick="ShowAddForm">➕ Add New Item</button>
+    </div>
+
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    <!-- Add/Edit form overlay or box -->
+    @if (showForm)
+    {
+        <div class="card bg-dark border-secondary p-4 mb-4 esh-admin-form-card">
+            <h4 class="text-white mb-3">@(editingItem == null ? "Add Catalog Item" : "Edit Catalog Item")</h4>
+            <EditForm Model="@formModel" OnValidSubmit="SaveItem">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Name</label>
+                        <InputText @bind-Value="formModel.Name" class="form-control bg-dark text-white border-secondary" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Price</label>
+                        <InputNumber @bind-Value="formModel.Price" class="form-control bg-dark text-white border-secondary" TValue="decimal" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Brand</label>
+                        <InputSelect @bind-Value="formModel.CatalogBrandId" class="form-select bg-dark text-white border-secondary">
+                            <option value="">Select Brand</option>
+                            @foreach (var brand in brands)
+                            {
+                                <option value="@brand.Id">@brand.Brand</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Type</label>
+                        <InputSelect @bind-Value="formModel.CatalogTypeId" class="form-select bg-dark text-white border-secondary">
+                            <option value="">Select Type</option>
+                            @foreach (var type in types)
+                            {
+                                <option value="@type.Id">@type.Type</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <InputTextArea @bind-Value="formModel.Description" class="form-control bg-dark text-white border-secondary" rows="3" />
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary px-4" @onclick="CancelForm">Cancel</button>
+                    <button type="submit" class="btn btn-success px-4">Save</button>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+    <!-- Catalog List Table -->
+    @if (items == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-secondary mt-2">Loading catalog items...</p>
+        </div>
+    }
+    else if (!items.Any())
+    {
+        <div class="text-center py-5 bg-dark border border-secondary rounded">
+            <h3 class="text-white mb-2">No items in catalog</h3>
+            <p class="text-secondary mb-0">Click the button above to add the first item.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive p-4 bg-dark border border-secondary rounded esh-admin-table-card">
+            <table class="table table-dark table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Image</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Brand</th>
+                        <th>Type</th>
+                        <th class="text-end" style="width: 200px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in items)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@item.PictureUri" alt="@item.Name" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: contain; background: #12131a; border-color: rgba(255,255,255,0.1);" />
+                            </td>
+                            <td>
+                                <h6 class="mb-0 text-white">@item.Name</h6>
+                                <small class="text-secondary">@item.Description</small>
+                            </td>
+                            <td class="fw-bold">@item.Price.ToString("C")</td>
+                            <td>@(brands.FirstOrDefault(b => b.Id == item.CatalogBrandId)?.Brand ?? item.CatalogBrandId.ToString())</td>
+                            <td>@(types.FirstOrDefault(t => t.Id == item.CatalogTypeId)?.Type ?? item.CatalogTypeId.ToString())</td>
+                            <td class="text-end">
+                                <button class="btn btn-outline-info btn-sm me-2" @onclick="() => EditItem(item)">Edit</button>
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteItem(item.Id)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<CatalogItemDto>? items;
+    private List<CatalogBrand> brands = new();
+    private List<CatalogType> types = new();
+
+    private bool showForm = false;
+    private CatalogItemFormModel formModel = new();
+    private CatalogItemDto? editingItem;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            brands = await Http.GetFromJsonAsync<List<CatalogBrand>>("api/catalog-brands") ?? new();
+            types = await Http.GetFromJsonAsync<List<CatalogType>>("api/catalog-types") ?? new();
+            
+            var response = await Http.GetFromJsonAsync<CatalogListResponse>("api/catalog-items?pageIndex=0&pageSize=100");
+            items = response?.CatalogItems ?? new();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading catalog data: {ex.Message}";
+        }
+    }
+
+    private void ShowAddForm()
+    {
+        editingItem = null;
+        formModel = new CatalogItemFormModel();
+        showForm = true;
+    }
+
+    private void EditItem(CatalogItemDto item)
+    {
+        editingItem = item;
+        formModel = new CatalogItemFormModel
+        {
+            Name = item.Name,
+            Description = item.Description,
+            Price = item.Price,
+            CatalogBrandId = item.CatalogBrandId,
+            CatalogTypeId = item.CatalogTypeId,
+            PictureUri = item.PictureUri
+        };
+        showForm = true;
+    }
+
+    private void CancelForm()
+    {
+        showForm = false;
+        editingItem = null;
+    }
+
+    private async Task SaveItem()
+    {
+        try
+        {
+            if (editingItem == null)
+            {
+                // Create
+                var req = new CreateCatalogItemRequest(
+                    formModel.Name,
+                    formModel.Description,
+                    formModel.Price,
+                    formModel.PictureUri,
+                    formModel.CatalogTypeId ?? 1,
+                    formModel.CatalogBrandId ?? 1
+                );
+                await Http.PostAsJsonAsync("api/catalog-items", req);
+            }
+            else
+            {
+                // Update
+                var req = new UpdateCatalogItemRequest(
+                    editingItem.Id,
+                    formModel.Name,
+                    formModel.Description,
+                    formModel.Price,
+                    formModel.PictureUri,
+                    formModel.CatalogTypeId ?? 1,
+                    formModel.CatalogBrandId ?? 1
+                );
+                await Http.PutAsJsonAsync("api/catalog-items", req);
+            }
+
+            showForm = false;
+            editingItem = null;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving catalog item: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteItem(int id)
+    {
+        try
+        {
+            var res = await Http.DeleteAsync($"api/catalog-items/{id}");
+            if (res.IsSuccessStatusCode)
+            {
+                await LoadData();
+            }
+            else
+            {
+                errorMessage = $"Failed to delete item: {res.ReasonPhrase}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting item: {ex.Message}";
+        }
+    }
+
+    // Models
+    public class CatalogItemFormModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+        [Required]
+        public string Description { get; set; } = string.Empty;
+        [Range(0.01, 10000.00)]
+        public decimal Price { get; set; } = 9.99M;
+        [Required]
+        public int? CatalogBrandId { get; set; }
+        [Required]
+        public int? CatalogTypeId { get; set; }
+        public string? PictureUri { get; set; }
+    }
+
+    public record CatalogBrand(int Id, string Brand);
+    public record CatalogType(int Id, string Type);
+    
+    public record CatalogItemDto(
+        int Id,
+        string Name,
+        string Description,
+        decimal Price,
+        string PictureUri,
+        int CatalogTypeId,
+        int CatalogBrandId
+    );
+
+    public record CatalogListResponse(List<CatalogItemDto> CatalogItems, int TotalItems);
+
+    public record CreateCatalogItemRequest(
+        string Name,
+        string Description,
+        decimal Price,
+        string? PictureUri,
+        int CatalogTypeId,
+        int CatalogBrandId
+    );
+
+    public record UpdateCatalogItemRequest(
+        int Id,
+        string Name,
+        string Description,
+        decimal Price,
+        string? PictureUri,
+        int CatalogTypeId,
+        int CatalogBrandId
+    );
+}

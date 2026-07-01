@@ -1,0 +1,50 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="container my-5 text-white">
+    <h2 class="mb-4">My Orders</h2>
+
+    @if (Model.Orders.Any())
+    {
+        <div class="table-responsive esh-orders-table-wrapper p-4 bg-dark border border-secondary rounded">
+            <table class="table table-dark table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Order Date</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td>#@order.OrderNumber</td>
+                            <td>@order.OrderDate.ToString("g")</td>
+                            <td>
+                                <span class="badge bg-success">@order.Status</span>
+                            </td>
+                            <td class="fw-bold text-gradient">@order.Total.ToString("C")</td>
+                            <td class="text-end">
+                                <a asp-page="Detail" asp-route-orderId="@order.OrderNumber" class="btn btn-outline-light btn-sm">View Details</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 bg-dark border border-secondary rounded p-4">
+            <h3 class="mb-3">No orders placed yet</h3>
+            <p class="text-secondary mb-4">You haven't ordered anything yet. Browse our store catalog to find items.</p>
+            <a asp-page="/Index" class="btn btn-primary px-5 py-2">Explore Products</a>
+        </div>
+    }
+</div>
