@@ -1,0 +1,27 @@
+@model OrderViewModel
+
+<p class="text-muted">Shipping to: @Model.ShippingAddress</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Unit price</th>
+            <th>Units</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderItems)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.UnitPrice.ToString("C")</td>
+                <td>@item.Units</td>
+                <td>@((item.UnitPrice * item.Units).ToString("C"))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Total: @Model.Total.ToString("C")</h4>

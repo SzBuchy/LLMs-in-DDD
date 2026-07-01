@@ -1,0 +1,35 @@
+@model List<OrderViewModel>
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<h1 class="mb-4">My Orders</h1>
+
+@if (!Model.Any())
+{
+    <p>You haven't placed any orders yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order #</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.OrderNumber</td>
+                    <td>@order.OrderDate.ToString("g")</td>
+                    <td>@order.Total.ToString("C")</td>
+                    <td><a asp-controller="Order" asp-action="Detail" asp-route-orderId="@order.OrderNumber">View</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

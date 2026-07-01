@@ -1,0 +1,11 @@
+@model OrderViewModel
+@{
+    ViewData["Title"] = "Order placed";
+}
+
+<h1 class="mb-4">Thank you for your order!</h1>
+<p>Your order number is <strong>#@Model.OrderNumber</strong>, placed on @Model.OrderDate.ToString("g").</p>
+
+<partial name="_OrderSummary" model="Model" />
+
+<a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Continue shopping</a>

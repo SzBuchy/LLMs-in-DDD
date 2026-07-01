@@ -1,0 +1,30 @@
+@model ApplicationCore.Entities.OrderAggregate.Address
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<h1 class="mb-4">Checkout</h1>
+
+<form asp-controller="Order" asp-action="Checkout" method="post" class="col-md-6">
+    <div class="mb-3">
+        <label class="form-label">Street</label>
+        <input class="form-control" name="street" value="@Model.Street" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">City</label>
+        <input class="form-control" name="city" value="@Model.City" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">State</label>
+        <input class="form-control" name="state" value="@Model.State" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Country</label>
+        <input class="form-control" name="country" value="@Model.Country" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Zip Code</label>
+        <input class="form-control" name="zipCode" value="@Model.ZipCode" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Place order</button>
+</form>
